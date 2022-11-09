@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Delivers</string>
+
+    <string name="cerTitle">휴대폰 번호로 시작하기</string>
+    <string name="cer_phone">휴대폰번호</string>
+    <string name="cer_num">인증번호</string>
+    <string name="cer_Login">Log IN</string>
+    <string name="submit">전송</string>
+    <string name="resubmit">재전송</string>
 </resources>
