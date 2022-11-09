@@ -1,24 +1,69 @@
 package com.kgg.android.delivers
 
-import androidx.appcompat.app.AppCompatActivity
+
 import android.os.Bundle
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.kgg.android.delivers.MainFragment
+import com.kgg.android.delivers.R
 import kotlinx.android.synthetic.main.activity_main.*
+
+val fragmentMain by lazy { MainFragment() }
+//private val fragmentCreate by lazy { basic_createFragment() }
+//private val fragmentChat by lazy { chatFragment() }
+//private val fragmentMore by lazy { moreFragment() }
+//val fragmentList by lazy { listFragment() }
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var auth: FirebaseAuth
-    var uid = ""
-    val firestore = FirebaseFirestore.getInstance()
+    val manager = supportFragmentManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        auth = FirebaseAuth.getInstance()
-        uid = auth.currentUser?.uid.toString()
-        val appCollection = firestore.collection("users")
-        textView.setText(uid)
+
+        initNavigationBar()
+    }
+
+    private fun initNavigationBar() {
+        bottom_navi.run {
+            setOnNavigationItemSelectedListener {
+                when (it.itemId) {
+                    R.id.home -> {
+                        change(fragmentMain)
+                    }
+//                    R.id.chat -> {
+//                        change(fragmentCreate)
+//                    }
+//                    R.id.mypage -> {
+//                        change(fragmentChat)
+//                    }
+                }
+                true
+            }
+            selectedItemId = R.id.home
+        }
+    }
+
+    fun change(fragment: Fragment) {
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.changeFragment, fragment)
+            .commitNow()
+    }
+
+
+    private var lastTimeBackPressed: Long = 0
+
+    override fun onBackPressed() { //뒤로가기 처리
+        if (System.currentTimeMillis() - lastTimeBackPressed >= 1500) {
+            lastTimeBackPressed = System.currentTimeMillis()
+            Toast.makeText(this, "'뒤로' 버튼을 한번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            finishAffinity()
+        }
     }
 }
+
+

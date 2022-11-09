@@ -144,6 +144,7 @@
         android:textSize="16dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/phone_num"
+        app:layout_constraintEnd_toEndOf="@+id/phone_num"
         app:layout_constraintStart_toStartOf="@+id/phone_num"
         app:layout_constraintTop_toTopOf="@+id/phone_num" />
 
@@ -160,6 +161,7 @@
         android:textSize="16dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/cer_num"
+        app:layout_constraintEnd_toEndOf="@+id/cer_num"
         app:layout_constraintStart_toStartOf="@+id/cer_num"
         app:layout_constraintTop_toTopOf="@+id/cer_num" />
 
@@ -170,7 +172,7 @@
         android:letterSpacing="0.01"
         android:lineSpacingExtra="6sp"
         android:text="@string/submit"
-        android:textSize="12sp"
+        android:textSize="14dp"
         android:textStyle="normal"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="@+id/regist_submit"
@@ -186,7 +188,7 @@
         android:lineSpacingExtra="6sp"
         android:text="@string/resubmit"
         android:textColor="#31A9F3"
-        android:textSize="16dp"
+        android:textSize="14dp"
         android:textStyle="normal|bold"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/regist_submit"
