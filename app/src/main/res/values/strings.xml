@@ -7,4 +7,5 @@
     <string name="cer_Login">Log IN</string>
     <string name="submit">전송</string>
     <string name="resubmit">재전송</string>
+    <string name="direct_message">채팅하기</string>
 </resources>
