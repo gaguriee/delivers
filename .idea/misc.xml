@@ -3,7 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/submit_box.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/text_form.xml" value="0.1325" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.13645833333333332" />
+        <entry key="app/src/main/res/layout/certification.xml" value="0.4036319721980589" />
       </map>
     </option>
   </component>
@@ -12,5 +15,12 @@
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.2553085327148437" />
+      </ProjectState>
+    </option>
   </component>
 </project>
