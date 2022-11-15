@@ -7,6 +7,13 @@
         android:title="홈"
         app:showAsAction="always"/>
 
+
+    <item
+        android:id="@+id/upload"
+        android:enabled="true"
+        android:title="등록"
+        app:showAsAction="always"/>
+
     <item
         android:id="@+id/chat"
         android:enabled="true"
