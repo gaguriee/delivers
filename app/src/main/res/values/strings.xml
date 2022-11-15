@@ -8,4 +8,6 @@
     <string name="submit">전송</string>
     <string name="resubmit">재전송</string>
     <string name="direct_message">채팅하기</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
