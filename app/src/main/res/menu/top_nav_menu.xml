@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/search"
+        android:enabled="true"
+        android:title="검색"
+        android:icon="@drawable/search"
+        app:showAsAction = "always" />
+    <item
+        android:id="@+id/setting"
+        android:enabled="true"
+        android:title="설정"
+        android:icon="@drawable/setting"
+        app:showAsAction = "always" />
+</menu>

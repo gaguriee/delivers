@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.graphics.Bitmap.createBitmap
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -103,7 +102,7 @@ class MapSearchFragment : Fragment(), OnMapReadyCallback {
             //Log.d("location test","${latitude}, ${longitude}")
 
         //}
-        gpsBtn = binding.currentGps
+
 
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
         mLocationRequest =  LocationRequest.create().apply {
@@ -209,7 +208,7 @@ class MapSearchFragment : Fragment(), OnMapReadyCallback {
             val roundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
             val bitmapRect = RectF()
             canvas.save()
-            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.bagel) // 카테고리별로 사진 바뀌어야 함!!!!
+            val bitmap = BitmapFactory.decodeResource(resources, R.drawable.donut) // 카테고리별로 사진 바뀌어야 함!!!!
             //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
             if (bitmap != null) {
                 val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
