@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.kgg.android.delivers.loginActivity.loginActivity
+import com.kgg.android.delivers.loginActivity.userinfoActivity
 
 
 class IntroActivity : AppCompatActivity() {
