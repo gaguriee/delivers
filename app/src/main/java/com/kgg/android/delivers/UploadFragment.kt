@@ -415,24 +415,6 @@ class UploadFragment : Fragment() {
         return binding.root
     }
 
-    override fun onPause() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onPause()
-    }
-
-    override fun onDestroyView() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onDestroyView()
-    }
-    override fun onDestroy() {
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onDestroy()
-    }
 
 
 
