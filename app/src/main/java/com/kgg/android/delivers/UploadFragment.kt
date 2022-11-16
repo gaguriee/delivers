@@ -415,6 +415,8 @@ class UploadFragment : Fragment() {
         return binding.root
     }
 
+
+
     override fun onPause() {
         mapViewContainer?.removeView(mapview)
         bindingFin.mapContainer.removeView(mapview)
