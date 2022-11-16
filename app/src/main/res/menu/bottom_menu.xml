@@ -4,6 +4,7 @@
     <item
         android:id="@+id/home"
         android:enabled="true"
+        android:icon="@drawable/homebtn"
         android:title="홈"
         app:showAsAction="always"/>
 
@@ -12,16 +13,19 @@
         android:id="@+id/upload"
         android:enabled="true"
         android:title="등록"
+        android:icon="@drawable/uploadbtn"
         app:showAsAction="always"/>
 
     <item
         android:id="@+id/chat"
         android:enabled="true"
+        android:icon="@drawable/chatbtn"
         android:title="채팅"
         app:showAsAction="always"/>
     <item
         android:id="@+id/mypage"
         android:enabled="true"
+        android:icon="@drawable/mypage"
         android:title="마이페이지"
         app:showAsAction="always"/>
 

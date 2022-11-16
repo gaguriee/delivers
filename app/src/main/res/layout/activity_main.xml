@@ -6,6 +6,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        >
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+
+            app:logo="@drawable/delivers"
+
+            app:menu="@menu/top_nav_menu"
+            />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
     <FrameLayout
         android:id="@+id/changeFragment"
         android:layout_width="match_parent"
