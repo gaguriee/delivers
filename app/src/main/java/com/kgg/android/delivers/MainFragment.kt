@@ -4,12 +4,12 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.*
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -18,31 +18,29 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat.startActivity
+import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import java.util.*
-import com.bumptech.glide.Glide
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
 import com.kgg.android.delivers.databinding.FragmentMainBinding
-import com.kgg.android.delivers.databinding.FragmentUploadBinding
 import kotlinx.android.synthetic.main.fragment_main.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
 import storyActivity.storyviewActivity
+import java.util.*
+
 
 class MainFragment : Fragment() {
 
@@ -137,6 +135,8 @@ class MainFragment : Fragment() {
         Log.d("CheckStoryList" , storyList.toString())
         Log.d("firestore" , firestore.toString())
 
+        var markerArr = ArrayList<MapPOIItem>()
+
         doccol.get()
             .addOnSuccessListener { result ->
                 storyList.clear()
@@ -152,6 +152,20 @@ class MainFragment : Fragment() {
                         document["longitude"] as Double,
                         document["registerDate"] as String
                     )
+                    var marker = MapPOIItem()
+                    marker.itemName = document["category"] as String // 어차피 화면에는 안나옴
+                    marker.isDraggable = true //
+                    marker.isCustomImageAutoscale = false
+                    marker.isShowCalloutBalloonOnTouch = false
+                    // 제일 처음엔 학교 주소로 초기화
+                    marker.mapPoint =MapPoint.mapPointWithGeoCoord(document["latitude"] as Double, document["longitude"] as Double)
+                    var bitmap:Bitmap = createUserBitmap(check_category(document["category"] as String))
+                    marker.markerType = MapPOIItem.MarkerType.CustomImage
+                    marker.customImageBitmap = bitmap
+                    marker.userObject = count
+                    markerArr.add(marker)
+
+
 
                     var targetLocation = Location("")
                     targetLocation.latitude =item.latitude
@@ -266,15 +280,54 @@ class MainFragment : Fragment() {
             val uNowPosition = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
 
             // 현 위치에 마커 찍기
+            mapview.addPOIItems(markerArr.toArray( arrayOfNulls<MapPOIItem>(markerArr.size)))
+            mapview.setPOIItemEventListener(object:MapView.POIItemEventListener{
+                override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+                    val intent = Intent(requireContext(), storyviewActivity::class.java)
+                    var position = poiItem?.userObject as Int
+
+                    intent.putExtra("index", position.toString())
+                    //    intent.putStringArrayListExtra("imgArr", imgArr)
+                    //  intent.putStringArrayListExtra("desArr", desArr)
+                    intent.putParcelableArrayListExtra("StoryArr", storyList)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0, 0)
+                }
+                override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+                }
+                override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
+                }
+                override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
+                }
+            })
 
             mapview.setMapCenterPoint(uNowPosition,true)
             mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
+            Toast.makeText(requireContext(),"${check_category("chicken")}",Toast.LENGTH_SHORT).show()
 
         }
 
 
         return binding.root
 
+    }
+    fun check_category(category:String):Int{
+        var id = 0
+        when(category)
+        {
+            "chicken" -> id =R.drawable.chicken
+            "hamburger"-> id =R.drawable.hamburger
+            "pizza" -> id =R.drawable.pizza
+            "coffee"->id =R.drawable.coffee
+            "taco" -> id =R.drawable.taco
+            "banana"-> id =R.drawable.banana
+            "bread"-> id =R.drawable.bread
+            "donut"-> id =R.drawable.donut
+            "salad"-> id =R.drawable.salad
+            "sushi"-> id =R.drawable.sushi
+            "guitar"-> id =R.drawable.guitar
+        }
+        return id
     }
 
     override fun onPause() {
@@ -295,6 +348,53 @@ class MainFragment : Fragment() {
         bindingFin.mapContainer.removeView(mapview)
         bindingFin.mapContainer.removeAllViews()
         super.onDestroy()
+    }
+
+    // 커스텀 마커 이미지
+    private fun createUserBitmap(id:Int): Bitmap {
+        var result: Bitmap = createBitmap(1000,1000)
+        try {
+            result = Bitmap.createBitmap(dp(62f).toInt(), dp(76f).toInt(), Bitmap.Config.ARGB_8888)
+            result.eraseColor(Color.TRANSPARENT)
+            val canvas = Canvas(result)
+
+            val drawable = resources.getDrawable(R.drawable.marker1)
+
+            drawable.setBounds(0, 0, dp(62f).toInt(), dp(76f).toInt())
+            drawable.draw(canvas)
+            val roundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+            val bitmapRect = RectF()
+            canvas.save()
+            val bitmap = BitmapFactory.decodeResource(resources, id) // 카테고리별로 사진 바뀌어야 함!!!!
+            //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
+            if (bitmap != null) {
+                val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                val matrix = Matrix()
+                val scale: Float = dp(45.0f) / bitmap.width.toFloat()
+                matrix.postTranslate(dp(22.0f), dp(15.0f))
+                matrix.postScale(scale, scale)
+                roundPaint.setShader(shader)
+                shader.setLocalMatrix(matrix)
+                bitmapRect[dp(5.0f), dp(5.0f), dp(57.0f)] = dp(52.0f + 5.0f)
+                canvas.drawRoundRect(bitmapRect, dp(26.0f), dp(26.0f), roundPaint)
+            }
+            canvas.restore()
+            try {
+                canvas.setBitmap(null)
+            } catch (e: Exception) {
+            }
+        } catch (t: Throwable) {
+            t.printStackTrace()
+        }
+        return result
+
+    }
+
+    //
+    fun dp(value: Float): Float {
+        return if (value == 0f) {
+            0.0f
+        } else Math.ceil((resources.displayMetrics.density * value).toDouble()).toFloat()
     }
 
     class StoriesAdapter(private val stories: List<Story>, context: Context) :
