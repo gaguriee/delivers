@@ -12,6 +12,7 @@ import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.MainFragment
 import java.util.concurrent.TimeUnit
 
@@ -157,12 +158,8 @@ class loginActivity : AppCompatActivity() {
                 if (task.isSuccessful)  {
                     Log.d(TAG, "signInWithCredential:success")
                     var name = intent.getStringExtra("name")
-                    var regNum_front = intent.getStringExtra("regNum_front")
-                    var regNum_back = intent.getStringExtra("regNum_back")
-                    val intent = Intent(this, MainFragment::class.java)
+                    val intent = Intent(this, userinfoActivity::class.java)
                     intent.putExtra("name", name.toString())
-                    intent.putExtra("regNum_front", regNum_front.toString())
-                    intent.putExtra("regNum_back", regNum_back.toString())
                     intent.putExtra("phoneNum", editTextPhone.text.toString())
 
                     startActivity(intent)

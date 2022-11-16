@@ -35,19 +35,27 @@ class userinfoActivity : AppCompatActivity() {
 
         //        기존 회원일 경우 (회원 정보가 존재할 경우) 현재 activity 생략
 
+
+
+
         val docref =fbFirestore?.collection("users")?.document(auth?.uid.toString())
+
+        Log.d("TAG", "docref: "+docref)
 
         docref?.get()?.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val document = task.result
-                if(document != null) {
+                if (docref != null) {
                     if (document.exists()) {
                         val intent = Intent(applicationContext, MainActivity::class.java)
                         startActivity(intent)
+                        Log.d("TAG", "Error: already existing user1")
                     } // 회원 정보 존재, 바로 메인 화면으로 pass
+                    Log.d("TAG", "Error: already existing user2")
                 }
+
             } else {
-                Log.d("TAG", "Error: ", task.exception)
+                Log.d("TAG", "Error: already existing user")
             }
         }
 
