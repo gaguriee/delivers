@@ -18,6 +18,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -30,6 +31,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.databinding.FragmentMainBinding
 import com.kgg.android.delivers.databinding.FragmentUploadBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -50,6 +52,9 @@ class UploadFragment : Fragment() {
     private var latitude:Double? = 0.0
     private var longitude:Double? = 0.0
     var currentLocation = ""
+
+    private lateinit var mapview:MapView
+    var mapViewContainer: RelativeLayout? = null
 
     // 카테고리 이름 담을 변수 선언
     var category_name = ""
@@ -74,6 +79,8 @@ class UploadFragment : Fragment() {
     // 맵 커스텀 이벤트 리스너
     private val mapEventListener = CustomMapViewEventListener()
 
+    lateinit var bindingFin:FragmentUploadBinding
+
 
 
 
@@ -95,8 +102,8 @@ class UploadFragment : Fragment() {
         longitude = 127.075987
 
         if (checkPermissionForLocation(requireContext())) {
-        startLocationUpdates()
-        Log.d("location test","${latitude}, ${longitude}")
+            startLocationUpdates()
+            Log.d("location test","${latitude}, ${longitude}")
 
         }
 
@@ -121,9 +128,13 @@ class UploadFragment : Fragment() {
     ): View? {
 
         val binding = FragmentUploadBinding.inflate(inflater, container, false)
+        bindingFin = FragmentUploadBinding.inflate(inflater, container, false)
+
+        mapview = MapView(requireActivity())
+
 
         // initialize map & single marker
-        var mapview:MapView = binding.mapView
+
         // binding.mapView.setMapViewEventListener(mapEventListener)
         var marker = MapPOIItem()
 
@@ -194,13 +205,14 @@ class UploadFragment : Fragment() {
         locationMap.put("longitude",longitude)
 
         marker.userObject = locationMap
+        // 현 위치에 마커 찍기
+        marker.mapPoint = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
 
-
-
-
+        mapview.setMapCenterPoint(marker.mapPoint,true)
+        mapview.addPOIItem(marker)
 
         // mapview event listener
-        binding.mapView.setMapViewEventListener(object:MapView.MapViewEventListener{
+        mapview.setMapViewEventListener(object:MapView.MapViewEventListener{
             override fun onMapViewInitialized(p0: MapView?) {
             }
             override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
@@ -265,7 +277,7 @@ class UploadFragment : Fragment() {
             }
         })
 
-        binding.mapView.setPOIItemEventListener(object:MapView.POIItemEventListener{
+        mapview.setPOIItemEventListener(object:MapView.POIItemEventListener{
             override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
             }
             override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
@@ -295,13 +307,11 @@ class UploadFragment : Fragment() {
 
 
 
+        mapViewContainer = RelativeLayout(requireContext())
+        mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT)
+        binding.mapContainer.addView(mapViewContainer)
+        mapViewContainer?.addView(mapview)
 
-
-        // 현 위치에 마커 찍기
-        marker.mapPoint = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
-
-        binding.mapView.setMapCenterPoint(marker.mapPoint,true)
-        binding.mapView.addPOIItem(marker)
 
 
 
@@ -313,7 +323,7 @@ class UploadFragment : Fragment() {
         // gps 버튼 눌렀을 때 현재 위치로 이동되도록
         gpsBtn.setOnClickListener{
 
-            binding.mapView.currentLocationTrackingMode =
+            mapview.currentLocationTrackingMode =
                 MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading  //이 부분
 
             val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -338,10 +348,10 @@ class UploadFragment : Fragment() {
 
             // 현 위치에 마커 찍기
 
-            binding.mapView.setMapCenterPoint(uNowPosition,true)
+            mapview.setMapCenterPoint(uNowPosition,true)
 
             marker.mapPoint =uNowPosition
-            binding.mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
+            mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
 
         }
 
@@ -352,6 +362,14 @@ class UploadFragment : Fragment() {
             // 좌표 담을 변수
             // marker.mapPoint.mapPointGeoCoord : 마커의 좌표값
             // 이거 쓰면 됨, latitude랑 longitude가 안되면, marker.mapPoint.mapPointGeoCoord 이거 그대로 가져다 쓰면 됩니당.
+
+            var markers2 = mapview.poiItems.iterator()
+            while(markers2.hasNext()) {
+                var marker: MapPOIItem = markers2.next() as MapPOIItem
+                // marker.mapPoint = p0!!.mapCenterPoint
+                latitude = marker.mapPoint.mapPointGeoCoord.latitude
+                longitude = marker.mapPoint.mapPointGeoCoord.longitude
+            }
 
             if(fAdapter.selectPos!=-1){ // 카테고리 설정하면,
                 latitude = marker.mapPoint.mapPointGeoCoord.latitude
@@ -375,7 +393,8 @@ class UploadFragment : Fragment() {
 
 
                 //category_name
-                Toast.makeText(requireContext(),"${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(),"${latitude} ${longitude} ${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
+
             }else{ // 카테고리 미선택 시,
                 Toast.makeText(requireContext()," 카테고리를 설정해주세요.",Toast.LENGTH_SHORT).show()
             }
@@ -394,6 +413,25 @@ class UploadFragment : Fragment() {
 
 
         return binding.root
+    }
+
+    override fun onPause() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onPause()
+    }
+
+    override fun onDestroyView() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroyView()
+    }
+    override fun onDestroy() {
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroy()
     }
 
 
@@ -658,4 +696,3 @@ class UploadFragment : Fragment() {
 
 
 }
-

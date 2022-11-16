@@ -1,10 +1,13 @@
 package com.kgg.android.delivers
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,9 +16,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
@@ -27,11 +32,16 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.util.*
 import com.bumptech.glide.Glide
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.kgg.android.delivers.databinding.FragmentMainBinding
+import com.kgg.android.delivers.databinding.FragmentUploadBinding
 import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.daum.mf.map.api.MapPoint
+import net.daum.mf.map.api.MapView
 import storyActivity.storyviewActivity
 
 class MainFragment : Fragment() {
@@ -44,12 +54,22 @@ class MainFragment : Fragment() {
     var latitude = 0.0
     var longitude = 0.0
     var currentLocation = ""
+    private lateinit var mapview:MapView
+    var mapViewContainer:RelativeLayout? = null
+    lateinit var bindingFin: FragmentMainBinding
+
+    private var mFusedLocationProviderClient: FusedLocationProviderClient? = null // 현재 위치를 가져오기 위한 변수
+    lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
+    var mLocationRequest: LocationRequest = LocationRequest.create()// 위치 정보 요청의 매개변수를 저장하는
+    private val REQUEST_PERMISSION_LOCATION = 10
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         uid = auth.currentUser?.uid.toString()
         val appCollection = firestore.collection("users")
+
+
 
         latitude = 37.631472
         longitude = 127.075987
@@ -94,6 +114,14 @@ class MainFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val binding = FragmentMainBinding.inflate(inflater, container, false)
+        bindingFin = FragmentMainBinding.inflate(inflater, container, false)
+        mapview = MapView(requireActivity()).also{
+            mapViewContainer = RelativeLayout(requireContext())
+            mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT)
+            binding.mapContainer.addView(mapViewContainer)
+            mapViewContainer?.addView(it)
+        }
+
 
         val sAdapter = StoriesAdapter(storyList, requireContext())
         binding.sRecyclerView.adapter = sAdapter
@@ -207,8 +235,66 @@ class MainFragment : Fragment() {
         }
 
 
+        // Map 파트
+
+        var gpsBtn = binding.currentGpsMain // 현재 위치 버튼
+
+        // gps 버튼 눌렀을 때 현재 위치로 이동되도록
+        gpsBtn.setOnClickListener{
+
+            mapview.currentLocationTrackingMode =
+                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading  //이 부분
+
+            val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var userNowLocation: Location? = null
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                //User has previously accepted this permission
+                if (ActivityCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                }
+            } else {
+                //Not in api-23, no need to prompt
+                userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            }
+
+            // Toast.makeText(requireContext(),"좌표 ${longitude}  ${latitude}",Toast.LENGTH_SHORT).show()
+
+            //위도 , 경도
+            var lat = userNowLocation?.latitude
+            var long = userNowLocation?.longitude
+            val uNowPosition = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
+
+            // 현 위치에 마커 찍기
+
+            mapview.setMapCenterPoint(uNowPosition,true)
+            mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
+
+        }
+
+
         return binding.root
 
+    }
+
+    override fun onPause() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onPause()
+    }
+
+    override fun onDestroyView() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroy()
     }
 
     class StoriesAdapter(private val stories: List<Story>, context: Context) :

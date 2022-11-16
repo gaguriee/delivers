@@ -9,10 +9,15 @@
     tools:context=".MapSearchFragment">
 
 
-    <net.daum.mf.map.api.MapView
+    <RelativeLayout
         android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:id="@+id/map_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </RelativeLayout>
 
     <ImageButton
         android:id="@+id/current_gps"
