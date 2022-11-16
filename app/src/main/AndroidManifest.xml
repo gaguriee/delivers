@@ -23,11 +23,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
 
         <activity
@@ -48,6 +43,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCaK6QXnjl0d0_vKb1aAtdLSDboK1KDeyw" />
         <meta-data android:name="com.kakao.sdk.AppKey" android:value="ba63e1abe7ee3c53aa703d0371bd6fec"/>
+
+        <activity android:name=".loginActivity.userinfoActivity" android:exported="true"/>
 
     </application>
 
