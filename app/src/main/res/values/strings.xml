@@ -8,6 +8,18 @@
     <string name="submit">전송</string>
     <string name="resubmit">재전송</string>
     <string name="direct_message">채팅하기</string>
+
+
+    <!--  회원가입/로그인 관련 텍스트  -->
+    <string name="proTitle">프로필 설정</string>
+    <string name="pro_nick">활동명(닉네임)</string>
+    <string name="pro_pw">비밀번호</string>
+    <string name="pro_pwcheck">비밀번호 재확인</string>
+    <string name="pro_email">이메일</string>
+    <string name="pro_message">마케팅 메일 수신 동의</string>
+    <string name="pro_area">관심지역</string>
+    <string name="pro_finish">회원가입 완료</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -34,7 +34,7 @@ class IntroActivity : AppCompatActivity() {
             }, SPLASH_TIME)
         } else{ //아니면 바로 메인페이지로
             Handler(Looper.getMainLooper()).postDelayed({
-                startActivity(Intent(this, MainFragment::class.java))
+                startActivity(Intent(this, MainActivity::class.java))
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
                 finish()
 
