@@ -20,7 +20,6 @@ class IntroActivity : AppCompatActivity() {
         val pref = getSharedPreferences("isFirst", AppCompatActivity.MODE_PRIVATE)
         val first = pref.getString("isFirst", "none")
 
-
         // 최초실행인지 확인하는
         if (first == "none" ) { //최초 실행이면 로그인
             val editor = pref.edit()
