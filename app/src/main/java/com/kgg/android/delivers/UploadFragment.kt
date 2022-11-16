@@ -436,6 +436,27 @@ class UploadFragment : Fragment() {
 
 
 
+    override fun onPause() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onPause()
+    }
+
+    override fun onDestroyView() {
+        mapViewContainer?.removeView(mapview)
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroyView()
+    }
+    override fun onDestroy() {
+        bindingFin.mapContainer.removeView(mapview)
+        bindingFin.mapContainer.removeAllViews()
+        super.onDestroy()
+    }
+
+
+
 
     // 지도 이벤트 리스너!!!
     class CustomMapViewEventListener: MapView.MapViewEventListener{
