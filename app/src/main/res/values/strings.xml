@@ -9,7 +9,6 @@
     <string name="resubmit">재전송</string>
     <string name="direct_message">채팅하기</string>
 
-
     <!--  회원가입/로그인 관련 텍스트  -->
     <string name="proTitle">프로필 설정</string>
     <string name="pro_nick">활동명(닉네임)</string>

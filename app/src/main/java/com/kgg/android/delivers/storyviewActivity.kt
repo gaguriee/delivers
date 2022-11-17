@@ -1,6 +1,7 @@
 package storyActivity
 
 
+import android.content.Intent
 import com.teresaholfeld.stories.StoriesProgressView
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
@@ -17,6 +19,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.Story
+import com.kgg.android.delivers.chatActivity.ChatActivity
 //import data.user_data.signup_data
 import io.grpc.InternalChannelz.id
 import kotlinx.android.synthetic.main.activity_storydetail.*
@@ -55,6 +58,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
 
@@ -66,6 +71,9 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         var registerDate = intent.getStringExtra("registerDate")
 
 
+
+
+
 /*        image?.setImageResource(resources[0])*/
 
         counter = intent.getStringExtra("index")!!.toInt()
@@ -75,6 +83,14 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         image = findViewById<View>(R.id.image) as ImageView
         image!!.background = getResources().getDrawable(R.drawable.rounded_corner_border, null)
         image!!.setClipToOutline(true)
+
+
+        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
+        val chatButton = findViewById<LinearLayout>(R.id.finderTalkBtn)
+//        chatButton.setOnClickListener{
+//            val intent = Intent(this, ChatActivity::class.java)
+//            intent.putExtra("postId", currentStory)
+//        }
 
         PROGRESS_COUNT = StoryArr!!.size
         Log.d("photo", currentStory.photo)
@@ -106,7 +122,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         category.setText(sort)
 
         var userNickname = findViewById<TextView>(R.id.userNickname)
-        var wrtierId = currentStory.writer
+        var writerId = currentStory.writer
 
         var currTime =  System.currentTimeMillis()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
