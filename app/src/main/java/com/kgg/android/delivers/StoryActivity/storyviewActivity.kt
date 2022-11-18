@@ -87,7 +87,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
         chatButton.setOnClickListener{
             val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("postId", currentStory)
+            intent.putExtra("postId", currentStory.postId)
+            Log.d("story","${currentStory.postId}")
         }
 
         PROGRESS_COUNT = StoryArr!!.size

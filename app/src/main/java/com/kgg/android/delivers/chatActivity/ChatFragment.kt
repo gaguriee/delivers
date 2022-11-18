@@ -14,11 +14,13 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
-import com.google.firebase.database.ktx.database
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.kgg.android.delivers.data.ChatRoom
+import com.kgg.android.delivers.data.Message
 import com.kgg.android.delivers.databinding.FragmentChatBinding
 import com.kgg.android.delivers.databinding.ItemChatBinding
 import java.util.*
@@ -94,7 +96,7 @@ class ChatFragment : Fragment() {
 //            myUid = Firebase.auth.currentUser?.uid.toString()
 
             //접속한 userid
-            myUid = "ej"
+            myUid = Firebase.auth.currentUser?.uid.toString()!!
             Log.d("Chatting", myUid!!.toString())
 
             //자신이 포함된 채팅방의 uid를 모두 가져옴.

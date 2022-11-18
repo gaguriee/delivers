@@ -13,12 +13,16 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.MainActivity
+import com.kgg.android.delivers.data.ChatRoom
+import com.kgg.android.delivers.data.Message
 import com.kgg.android.delivers.databinding.ActivityChatBinding
 import com.kgg.android.delivers.databinding.ItemMineMessageBinding
 import com.kgg.android.delivers.databinding.ItemOtherMessageBinding
@@ -41,8 +45,10 @@ class ChatActivity : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
     lateinit var chatRoom: ChatRoom
     lateinit var destinationUid: String
-    lateinit var chatRoomUid: String
     lateinit var myUid: String
+    lateinit var postId:String
+    private var chatRoomUid: String? = null
+
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     private val fireStore = FirebaseFirestore.getInstance()
 
@@ -61,7 +67,7 @@ class ChatActivity : AppCompatActivity() {
 
 
         initializeListener()
-        //상대방 닉네임 연결 //이때 어느 디비를 참조해야하는가?
+        //상대방 닉네임 연결
         val docCol = fireStore.collection("users") //작업할 컬렉션
         docCol
             .whereEqualTo("uid","$destinationUid") //uid가 destinationUid와 일치하는 문서 가져오기
@@ -82,9 +88,10 @@ class ChatActivity : AppCompatActivity() {
 
 
 
-        if (chatRoomUid.isNullOrBlank()) //채팅방 키가 없으면 생성
+        if (chatRoomUid.isNullOrBlank()) { //채팅방 키가 없으면 생성
             setupChatRoomId()
-        else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
+            setupRecycler()
+        }else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
             setupRecycler()
 //        recyclerView = binding.recyclerMessages
 
@@ -128,17 +135,13 @@ class ChatActivity : AppCompatActivity() {
     }
 
     fun initializeProperty(){ //변수 초기화
-//        myUid = Firebase.auth.currentUser?.uid.toString()!!
+        myUid = Firebase.auth.currentUser?.uid.toString()!!
 //        fireDatabase = FirebaseDatabase.getInstance().reference!!
 
 //        chatRoom = (intent.getSerializableExtra("ChatRoom")) as ChatRoom //인텐트로부터 chatRoom 정보 넘겨받음
-        chatRoomUid = intent.getStringExtra("ChatRoomUid")!! //intent로부터 chatRoomUid넘겨받음
+        chatRoomUid = intent.getStringExtra("ChatRoomUid") //intent로부터 chatRoomUid넘겨받음
         destinationUid = intent.getStringExtra("destinationUid")!! //intent로부터 destinationUid 넘겨받음
-
-        myUid = "jj"
-//        chatRoomUid = "a"
-//        destinationUid = "jj"
-//        postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
+        postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
 
 
     }
@@ -163,14 +166,16 @@ class ChatActivity : AppCompatActivity() {
                 message.message?.let{it -> Log.d("Chatting",it)}
                 Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
 
-                fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
-                    .child(chatRoomUid).child("messages")
-                    .push().setValue(message).addOnSuccessListener {
-                        Log.d("chatting", "메세지 전송에 성공하였습니다.")
-                        edt_message.text.clear()
-                    }.addOnCanceledListener {
-                        Log.d("chatting", "메세지 전송에 실패하였습니다.")
-                    }
+                chatRoomUid?.let { it1 ->
+                    fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
+                        .child(it1).child("messages")
+                        .push().setValue(message).addOnSuccessListener {
+                            Log.d("chatting", "메세지 전송에 성공하였습니다.")
+                            edt_message.text.clear()
+                        }.addOnCanceledListener {
+                            Log.d("chatting", "메세지 전송에 실패하였습니다.")
+                        }
+                }
             }catch(e:Exception) {
                 e.printStackTrace()
                 Log.d("chatting", "메세지 전송 중 오류가 발생했습니다.")
@@ -198,7 +203,22 @@ class ChatActivity : AppCompatActivity() {
     }
 
     //수정 필요요
-    fun setupChatRoomId() { //chatRoomUid가 없을 경우 초기화 후 채팅 메세지 목록 초기화
+    fun setupChatRoomId() {
+       //chatRoomUid가 없을 경우 초기화 후 채팅 메세지 목록 초기화
+        var chatRoom = ChatRoom(postId)
+        chatRoom.users.put(myUid.toString(),true)
+        chatRoom.users.put(destinationUid, true)
+        Log.d("chatting", "$chatRoom")
+
+        fireDatabase.child("chatrooms") //채팅방 생성
+            .push().setValue(chatRoom).addOnSuccessListener {
+                Log.d("chatting", "채팅방 생성에 성공하였습니다.")
+                edt_message.text.clear()
+            }.addOnCanceledListener {
+                Log.d("chatting", "채팅방 생성에 실패하였습니다.")
+            }
+
+
         fireDatabase.child("chatrooms")
             .orderByChild("users/${destinationUid}").equalTo(true) //상대방 uid가 포함된 채팅 목록이 있는지 확인
             .addListenerForSingleValueEvent(object : ValueEventListener{
@@ -210,7 +230,7 @@ class ChatActivity : AppCompatActivity() {
                     for (data in snapshot.children) {
 //                        val chatRoom = data.getValue<ChatRoom>()
                         chatRoomUid = data.key!! //chatRoomId 초기화
-                        setupRecycler() //채팅 메시지 목록 업데이트
+//                        setupRecycler() //채팅 메시지 목록 업데이트
                         break
 
 
@@ -240,7 +260,9 @@ class ChatActivity : AppCompatActivity() {
         private var messages = ArrayList<Message>()
         var messageKeys: ArrayList<String> = arrayListOf()
 //        private var user: user_data? = null
-        val myUid = "jj"
+//        val myUid = "jj"
+        private val myUid = Firebase.auth.currentUser?.uid.toString()!!
+
         val recyclerView = (context as ChatActivity).recyclerView
 
 
