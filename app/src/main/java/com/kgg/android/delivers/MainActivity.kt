@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.kgg.android.delivers.UploadActivity.UploadFragment
 import kotlinx.android.synthetic.main.activity_main.*
+import com.kgg.android.delivers.chatActivity.ChatFragment
 
 
 // 가경, 보영, 은지
@@ -17,7 +18,7 @@ val fragmentMain by lazy { MainFragment() }
 val fragmentUpload by lazy { UploadFragment() }
 
 //private val fragmentCreate by lazy { basic_createFragment() }
-//private val fragmentChat by lazy { chatFragment() }
+private val fragmentChat by lazy { ChatFragment() }
 //private val fragmentMore by lazy { moreFragment() }
 //val fragmentList by lazy { listFragment() }
 
@@ -49,9 +50,9 @@ class MainActivity : AppCompatActivity() {
                     R.id.upload -> {
                         change(fragmentUpload)
                     }
-//                    R.id.chat -> {
-//                        change(fragmentCreate)
-//                    }
+                    R.id.chat -> {
+                        change(fragmentChat)
+                    }
 //                    R.id.mypage -> {
 //                        change(fragmentChat)
 //                    }
