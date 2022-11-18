@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/childConstraint"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <ImageView
+            android:id="@+id/imageAttach"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="centerCrop"
+            app:flow_horizontalAlign="center"
+            app:flow_verticalAlign="center"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#12000000"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <ImageView
+            android:id="@+id/name"
+            android:layout_width="320dp"
+            android:layout_height="72dp"
+            android:layout_marginBottom="64dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toTopOf="@+id/fastregisterBtn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/dotted_border" />
+
+
+        <EditText
+            android:id="@+id/postTitle"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="5dp"
+            android:background="@android:color/transparent"
+            android:hint="내용을 입력해주세요 (20자 이내)"
+            android:maxLength="20"
+            android:maxLines="1"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#C4FFFFFF"
+            android:textSize="14dp"
+            app:layout_constraintBottom_toBottomOf="@+id/name"
+            app:layout_constraintEnd_toEndOf="@+id/name"
+            app:layout_constraintStart_toStartOf="@+id/name"
+            app:layout_constraintTop_toTopOf="@+id/name"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+
+        <ImageView
+            android:id="@+id/fastregisterBtn"
+            android:layout_width="320dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="40dp"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/start_button" />
+
+        <TextView
+            android:id="@+id/btnText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="80dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="80dp"
+            android:layout_marginBottom="17dp"
+            android:gravity="center_horizontal"
+            android:text="등록하기"
+            android:textColor="@color/white"
+            android:textSize="16dp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@+id/fastregisterBtn"
+            app:layout_constraintEnd_toEndOf="@+id/fastregisterBtn"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/fastregisterBtn"
+            app:layout_constraintTop_toTopOf="@+id/fastregisterBtn"
+            app:layout_constraintVertical_bias="0.45" />
+
+        <RadioGroup
+            android:id="@+id/classification_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+        </RadioGroup>
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="44dp"
+            android:elevation="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/before_white" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

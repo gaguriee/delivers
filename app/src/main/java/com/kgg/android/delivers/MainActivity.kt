@@ -1,25 +1,19 @@
 package com.kgg.android.delivers
 
 
-import android.content.pm.PackageInfo
-import android.content.pm.PackageManager
 import android.os.Bundle
-import java.util.Base64
-import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.kgg.android.delivers.MainFragment
-import com.kgg.android.delivers.UploadFragment
-import com.kgg.android.delivers.MapSearchFragment
-import com.kgg.android.delivers.R
+import com.kgg.android.delivers.UploadActivity.UploadFragment
 import kotlinx.android.synthetic.main.activity_main.*
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
-import java.util.Base64.getEncoder
+
+
+// 가경, 보영, 은지
+// Main 화면, fragment 전환 activity
+
 
 val fragmentMain by lazy { MainFragment() }
-val fragmentUpload1 by lazy { MapSearchFragment() }
 val fragmentUpload by lazy { UploadFragment() }
 
 //private val fragmentCreate by lazy { basic_createFragment() }

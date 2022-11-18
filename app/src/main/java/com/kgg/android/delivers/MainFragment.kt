@@ -33,12 +33,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.data.Story
 import com.kgg.android.delivers.databinding.FragmentMainBinding
-import kotlinx.android.synthetic.main.fragment_main.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import storyActivity.storyviewActivity
+import com.kgg.android.delivers.StoryActivity.storyviewActivity
 import java.util.*
 
 
@@ -144,13 +144,14 @@ class MainFragment : Fragment() {
                 for (document in result) {
                     val item = Story(
                         document["writer"] as String,
-                        document["Location"] as String,
+                        document["location"] as String,
                         document["photo"] as String,
                         document["description"] as String,
                         document["category"] as String,
                         document["latitude"] as Double,
                         document["longitude"] as Double,
-                        document["registerDate"] as String
+                        document["registerDate"] as String,
+                        document["postId"] as String,
                     )
                     var marker = MapPOIItem()
                     marker.itemName = document["category"] as String // 어차피 화면에는 안나옴
@@ -168,8 +169,8 @@ class MainFragment : Fragment() {
 
 
                     var targetLocation = Location("")
-                    targetLocation.latitude =item.latitude
-                    targetLocation.longitude = item.longitude
+                    targetLocation.latitude =item.latitude!!
+                    targetLocation.longitude = item.longitude!!
 
 
                     var distance = myLocation.distanceTo(targetLocation)
@@ -185,8 +186,8 @@ class MainFragment : Fragment() {
                     var longt = storyList[count-1].longitude
                     var ltit = storyList[count-1].latitude
                     var docLoc = Location("")
-                    docLoc.longitude = longt
-                    docLoc.latitude = ltit
+                    docLoc.longitude = longt!!
+                    docLoc.latitude = ltit!!
                     var dt = myLocation.distanceTo(docLoc)
                     if(distance>=dt){
                         storyList.add(item)
@@ -197,11 +198,11 @@ class MainFragment : Fragment() {
                             var longt = storyList[i].longitude
                             var ltit = storyList[i].latitude
                             var docLoc = Location("")
-                            docLoc.longitude = longt
-                            docLoc.latitude = ltit
+                            docLoc.longitude = longt!!
+                            docLoc.latitude = ltit!!
                             var dt = myLocation.distanceTo(docLoc)
                             if(distance<dt){
-                                storyList.add(Story("","","","","",0.0,0.0 , "" ))
+                                storyList.add(Story("","","","","",0.0,0.0 , "", "" ))
 
                                 for(c in count downTo i+1){
                                     storyList[c]=storyList[c-1]
@@ -315,17 +316,15 @@ class MainFragment : Fragment() {
         var id = 0
         when(category)
         {
-            "chicken" -> id =R.drawable.chicken
-            "hamburger"-> id =R.drawable.hamburger
-            "pizza" -> id =R.drawable.pizza
-            "coffee"->id =R.drawable.coffee
-            "taco" -> id =R.drawable.taco
-            "banana"-> id =R.drawable.banana
-            "bread"-> id =R.drawable.bread
-            "donut"-> id =R.drawable.donut
-            "salad"-> id =R.drawable.salad
-            "sushi"-> id =R.drawable.sushi
-            "guitar"-> id =R.drawable.guitar
+            "chicken" -> id =R.drawable.chicken //치킨
+            "hamburger"-> id =R.drawable.hamburger //버거
+            "pizza" -> id =R.drawable.pizza //피자
+            "coffee"->id =R.drawable.coffee //카페디저트
+            "bread"-> id =R.drawable.bread //샌드위치
+            "meat"-> id =R.drawable.meat //고기
+            "salad"-> id =R.drawable.salad //샐러드
+            "sushi"-> id =R.drawable.sushi //회초밥
+            "guitar"-> id =R.drawable.guitar //기타
         }
         return id
     }
@@ -443,7 +442,7 @@ class MainFragment : Fragment() {
 
                 if (lostD.photo != "") {
                     val resourceId = lostD.photo
-                    storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
+                    storageRef.child(resourceId!!).downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Glide.with(context)
                                 .load(task.result)

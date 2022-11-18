@@ -11,18 +11,22 @@ import com.google.firebase.FirebaseException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.*
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kgg.android.delivers.MainActivity
-import com.kgg.android.delivers.MainFragment
 import java.util.concurrent.TimeUnit
 
 import com.kgg.android.delivers.R
 import kotlinx.android.synthetic.main.certification.*
 
+// 가경
+// 휴대폰 번호 로그인 및 회원가입 페이지
+
 class loginActivity : AppCompatActivity() {
-    // [START declare_auth]
+
     private lateinit var auth: FirebaseAuth
-    // [END declare_auth]
+    var fbFirestore: FirebaseFirestore? = Firebase.firestore
 
     private var storedVerificationId: String? = ""
     private lateinit var resendToken: PhoneAuthProvider.ForceResendingToken
@@ -94,7 +98,7 @@ class loginActivity : AppCompatActivity() {
                 val phoneNum = "+82" + editTextPhone.text.toString().substring(1)
                 startPhoneNumberVerification( phoneNum)
                 Toast.makeText(
-                    this, "인증번호가 전송되었습니다.0" + phoneNum,
+                    this, "인증번호가 전송되었습니다." + phoneNum,
                     Toast.LENGTH_SHORT
                 ).show()
                 send.setVisibility(View.INVISIBLE)
@@ -157,12 +161,39 @@ class loginActivity : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful)  {
                     Log.d(TAG, "signInWithCredential:success")
-                    var name = intent.getStringExtra("name")
-                    val intent = Intent(this, userinfoActivity::class.java)
-                    intent.putExtra("name", name.toString())
-                    intent.putExtra("phoneNum", editTextPhone.text.toString())
 
-                    startActivity(intent)
+
+                    //        기존 회원일 경우 (회원 정보가 존재할 경우) 현재 activity 생략
+                    val docref =fbFirestore?.collection("users")?.document(auth?.uid.toString())
+
+                    Log.d("TAG", "uid: "+auth?.uid.toString())
+                    Log.d("TAG", "docref: "+docref)
+
+                    docref?.get()?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val document = task.result
+                            if (document.exists()) {
+                                val intent = Intent(applicationContext, MainActivity::class.java)
+                                startActivity(intent)
+                                Log.d("TAG", "already existing user")
+                            } // 회원 정보 존재, 바로 메인 화면으로 pass
+                            else {
+                                Log.d("TAG", "New user, need to get information")
+                                val intent = Intent(this, userinfoActivity::class.java)
+                                intent.putExtra("phoneNum", editTextPhone.text.toString())
+                                startActivity(intent) // 회원 정보 없음, userinfoActivity로 이동
+
+                            }
+                        } else {
+                            Log.d("TAG", "New user, need to get information")
+                            val intent = Intent(this, userinfoActivity::class.java)
+                            intent.putExtra("phoneNum", editTextPhone.text.toString())
+
+                            startActivity(intent) // 회원 정보 없음, userinfoActivity로 이동
+                        }
+                    }
+
+
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)}
 
                 else {

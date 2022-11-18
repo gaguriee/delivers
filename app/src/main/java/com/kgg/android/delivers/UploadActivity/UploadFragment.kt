@@ -1,4 +1,4 @@
-package com.kgg.android.delivers
+package com.kgg.android.delivers.UploadActivity
 
 
 import android.Manifest
@@ -19,7 +19,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.createBitmap
@@ -31,20 +30,20 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.kgg.android.delivers.databinding.FragmentMainBinding
+import com.kgg.android.delivers.data.Category
+import com.kgg.android.delivers.R
 import com.kgg.android.delivers.databinding.FragmentUploadBinding
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPOIItem.*
 import net.daum.mf.map.api.MapPoint
 import net.daum.mf.map.api.MapView
-import storyActivity.storyviewActivity
 import java.util.*
 import kotlin.collections.HashMap
 
+// 보영
+// 스토리 위치 및 카테고리 등록 페이지
+
 class UploadFragment : Fragment() {
-    // 스토리 등록 페이지
 
     private lateinit var auth: FirebaseAuth
 
@@ -142,17 +141,15 @@ class UploadFragment : Fragment() {
         // category list
 
         var categoryList = arrayListOf<Category>(
-            Category("chicken","chicken",R.drawable.chicken),
-            Category("hamburger","hamburger",R.drawable.hamburger),
-            Category("pizza","pizza",R.drawable.pizza),
-            Category("coffee","coffee",R.drawable.coffee),
-            Category("taco","taco",R.drawable.taco),
-            Category("banana","banana",R.drawable.banana),
-            Category("bread","bread",R.drawable.bread),
-            Category("donut","donut",R.drawable.donut),
-            Category("salad","salad",R.drawable.salad),
-            Category("sushi","sushi",R.drawable.sushi),
-            Category("guitar","guitar",R.drawable.guitar)
+            Category("chicken","chicken", R.drawable.chicken),
+            Category("hamburger","hamburger", R.drawable.hamburger),
+            Category("pizza","pizza", R.drawable.pizza),
+            Category("coffee","coffee", R.drawable.coffee),
+            Category("bread","bread", R.drawable.bread),
+            Category("meat","meat", R.drawable.meat),
+            Category("salad","salad", R.drawable.salad),
+            Category("sushi","sushi", R.drawable.sushi),
+            Category("guitar","guitar", R.drawable.guitar)
         )
 
         // 이미지 bitmap 초기화, 제일 처음엔 흰바탕
@@ -394,6 +391,13 @@ class UploadFragment : Fragment() {
 
                 //category_name
                 Toast.makeText(requireContext(),"${latitude} ${longitude} ${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
+                val intent = Intent(requireContext(), UploadActivity::class.java)
+                intent.putExtra("latitude", latitude.toString())
+                intent.putExtra("longitude", longitude.toString())
+                intent.putExtra("category", category_name)
+                intent.putExtra("location", currentLocation)
+
+                startActivity(intent)
 
             }else{ // 카테고리 미선택 시,
                 Toast.makeText(requireContext()," 카테고리를 설정해주세요.",Toast.LENGTH_SHORT).show()

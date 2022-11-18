@@ -37,7 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name="storyActivity.storyviewActivity" android:exported="true"/>
+        <activity android:name=".StoryActivity.storyviewActivity" android:exported="true"/>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -45,6 +45,7 @@
         <meta-data android:name="com.kakao.sdk.AppKey" android:value="ba63e1abe7ee3c53aa703d0371bd6fec"/>
 
         <activity android:name=".loginActivity.userinfoActivity" android:exported="true"/>
+        <activity android:name=".UploadActivity.UploadActivity" android:exported="true"/>
 
     </application>
 
