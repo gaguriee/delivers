@@ -6,14 +6,14 @@
     android:layout_height="match_parent"
     android:layout_marginTop="?attr/actionBarSize"
     android:layout_marginBottom="?attr/actionBarSize"
-    tools:context=".MapSearchFragment">
+    tools:context=".UploadActivity.UploadFragment">
 
 
     <RelativeLayout
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <RelativeLayout
+        <net.daum.mf.map.api.MapView
             android:id="@+id/map_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>

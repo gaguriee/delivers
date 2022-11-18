@@ -33,6 +33,7 @@ import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.data.Category
 import com.kgg.android.delivers.R
 import com.kgg.android.delivers.databinding.FragmentUploadBinding
+import kotlinx.android.synthetic.main.fragment_map_search.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPOIItem.*
 import net.daum.mf.map.api.MapPoint
@@ -43,7 +44,7 @@ import kotlin.collections.HashMap
 // 보영
 // 스토리 위치 및 카테고리 등록 페이지
 
-class UploadFragment : Fragment() {
+class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEventListener{
 
     private lateinit var auth: FirebaseAuth
 
@@ -53,7 +54,6 @@ class UploadFragment : Fragment() {
     var currentLocation = ""
 
     private lateinit var mapview:MapView
-    var mapViewContainer: RelativeLayout? = null
 
     // 카테고리 이름 담을 변수 선언
     var category_name = ""
@@ -71,14 +71,9 @@ class UploadFragment : Fragment() {
 
 
     private var mFusedLocationProviderClient: FusedLocationProviderClient? = null // 현재 위치를 가져오기 위한 변수
-    lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
     var mLocationRequest: LocationRequest = LocationRequest.create()// 위치 정보 요청의 매개변수를 저장하는
-    private val REQUEST_PERMISSION_LOCATION = 10
 
-    // 맵 커스텀 이벤트 리스너
-    private val mapEventListener = CustomMapViewEventListener()
 
-    lateinit var bindingFin:FragmentUploadBinding
 
 
 
@@ -100,11 +95,7 @@ class UploadFragment : Fragment() {
         latitude = 37.631472
         longitude = 127.075987
 
-        if (checkPermissionForLocation(requireContext())) {
-            startLocationUpdates()
-            Log.d("location test","${latitude}, ${longitude}")
 
-        }
 
 
 
@@ -127,9 +118,9 @@ class UploadFragment : Fragment() {
     ): View? {
 
         val binding = FragmentUploadBinding.inflate(inflater, container, false)
-        bindingFin = FragmentUploadBinding.inflate(inflater, container, false)
 
-        mapview = MapView(requireActivity())
+
+        mapview = binding.mapContainer
 
 
         // initialize map & single marker
@@ -209,105 +200,13 @@ class UploadFragment : Fragment() {
         mapview.addPOIItem(marker)
 
         // mapview event listener
-        mapview.setMapViewEventListener(object:MapView.MapViewEventListener{
-            override fun onMapViewInitialized(p0: MapView?) {
-            }
-            override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
-            }
-            override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
-            }
-            override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
-            }
-            override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
+        mapview.setMapViewEventListener(this)
 
-            }
-            override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
-            }
-            override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
-            }
-            override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
-                var markers = p0!!.poiItems.iterator()
-
-                while(markers.hasNext()){
-                    var marker: MapPOIItem = markers.next() as MapPOIItem
-                    marker.mapPoint = p0!!.mapCenterPoint
-                    latitude = marker.mapPoint.mapPointGeoCoord.latitude
-                    longitude = marker.mapPoint.mapPointGeoCoord.longitude
-                }
-                try {
-                    mResultList = mGeocoder.getFromLocation(
-                        latitude!!.toDouble(), longitude!!.toDouble(), 1
-                    )
-                    println("위치 정보 받아오기 성공")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                if (mResultList != null) {
-                    Log.d("CheckCurrentLocation", mResultList!![0].getAddressLine(0))
-                    currentLocation = mResultList!![0].getAddressLine(0)
-                }
-                binding.addressText.text = currentLocation
-            }
-            override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
-
-                var markers = p0!!.poiItems.iterator()
-                while(markers.hasNext()) {
-                    var marker: MapPOIItem = markers.next() as MapPOIItem
-                    marker.mapPoint = p0!!.mapCenterPoint
-                    latitude = marker.mapPoint.mapPointGeoCoord.latitude
-                    longitude = marker.mapPoint.mapPointGeoCoord.longitude
-                }
-                try {
-                    mResultList = mGeocoder.getFromLocation(
-                        latitude!!.toDouble(), longitude!!.toDouble(), 1
-                    )
-                    println("위치 정보 받아오기 성공")
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                if (mResultList != null) {
-                    Log.d("CheckCurrentLocation", mResultList!![0].getAddressLine(0))
-                    currentLocation = mResultList!![0].getAddressLine(0)
-                }
-                binding.addressText.text = currentLocation
-
-            }
-        })
-
-        mapview.setPOIItemEventListener(object:MapView.POIItemEventListener{
-            override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
-            }
-            override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
-            }
-            override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
-            }
-            override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
-                // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
-                latitude = poiItem!!.mapPoint.mapPointGeoCoord.latitude
-                longitude = poiItem!!.mapPoint.mapPointGeoCoord.longitude
-                try {
-                    mResultList = mGeocoder.getFromLocation(
-                        latitude!!.toDouble(), longitude!!.toDouble(), 1
-                    )
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-                if (mResultList != null) {
-                    Log.d("CheckCurrentLocation", mResultList!![0].getAddressLine(0))
-                    currentLocation = mResultList!![0].getAddressLine(0)
-                }
-                binding.addressText.text = currentLocation
-            }
-        })
+        mapview.setPOIItemEventListener(this)
 
 
 
 
-        mapViewContainer = RelativeLayout(requireContext())
-        mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT)
-        binding.mapContainer.addView(mapViewContainer)
-        mapViewContainer?.addView(mapview)
 
 
 
@@ -419,88 +318,59 @@ class UploadFragment : Fragment() {
         return binding.root
     }
 
-
-
-
-    override fun onPause() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onPause()
+    override fun onMapViewInitialized(p0: MapView?) {
     }
-
-    override fun onDestroyView() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onDestroyView()
+    override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
     }
-    override fun onDestroy() {
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onDestroy()
+    override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
     }
+    override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
+    }
+    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
 
+    }
+    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
+    }
+    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+    }
+    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
+        var markers = p0!!.poiItems.iterator()
 
-
-
-    // 지도 이벤트 리스너!!!
-    class CustomMapViewEventListener: MapView.MapViewEventListener{
-
-        override fun onMapViewInitialized(p0: MapView?) {
-
-        }
-
-        override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
-
-        }
-
-        override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
-
-        }
-
-        override fun onMapViewSingleTapped(p0: MapView?, p1: MapPoint?) {
-
-        }
-
-        override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
-
-        }
-
-        override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
-
-        }
-
-        override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
-
-        }
-
-        override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
-
-
-            var markers = p0!!.poiItems.iterator()
-            while(markers.hasNext()){
-                var marker: MapPOIItem = markers.next() as MapPOIItem
-                marker.mapPoint = p0!!.mapCenterPoint
-            }
-
-
-        }
-
-        override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
-
-            var markers = p0!!.poiItems.iterator()
-            while(markers.hasNext()){
-                var marker: MapPOIItem = markers.next() as MapPOIItem
-                marker.mapPoint = p0!!.mapCenterPoint
-
-            }
-
-            // 지도의 중심 좌표
-            // 마커 위치 설정
+        while(markers.hasNext()){
+            var marker: MapPOIItem = markers.next() as MapPOIItem
+            marker.mapPoint = p0!!.mapCenterPoint
+            latitude = marker.mapPoint.mapPointGeoCoord.latitude
+            longitude = marker.mapPoint.mapPointGeoCoord.longitude
         }
 
     }
+    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
+
+        var markers = p0!!.poiItems.iterator()
+        while(markers.hasNext()) {
+            var marker: MapPOIItem = markers.next() as MapPOIItem
+            marker.mapPoint = p0!!.mapCenterPoint
+            latitude = marker.mapPoint.mapPointGeoCoord.latitude
+            longitude = marker.mapPoint.mapPointGeoCoord.longitude
+        }
+
+
+    }
+    override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+    }
+    override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+    }
+    override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
+    }
+    override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
+        // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
+        latitude = poiItem!!.mapPoint.mapPointGeoCoord.latitude
+        longitude = poiItem!!.mapPoint.mapPointGeoCoord.longitude
+    }
+
+
+
+
 
 
 
@@ -560,70 +430,7 @@ class UploadFragment : Fragment() {
 
 
 
-    // gps 버튼 눌렀을 때 현재 위치 받아오는 함수들
-    private fun startLocationUpdates() {
 
-        //FusedLocationProviderClient의 인스턴스를 생성.
-        mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-            && ActivityCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-        // 기기의 위치에 관한 정기 업데이트를 요청하는 메서드 실행
-        // 지정한 루퍼 스레드(Looper.myLooper())에서 콜백(mLocationCallback)으로 위치 업데이트를 요청
-        mFusedLocationProviderClient!!.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper())
-    }
-
-    // 시스템으로 부터 위치 정보를 콜백으로 받음
-    private val mLocationCallback = object : LocationCallback() {
-        override fun onLocationResult(locationResult: LocationResult) {
-            // 시스템에서 받은 location 정보를 onLocationChanged()에 전달
-            locationResult.lastLocation
-            onLocationChanged(locationResult.lastLocation)
-        }
-    }
-
-    // 시스템으로 부터 받은 위치정보를 화면에 갱신해주는 메소드
-    fun onLocationChanged(location: Location) {
-        mLastLocation = location
-        latitude = mLastLocation!!.latitude
-        longitude = mLastLocation!!.longitude
-
-
-        // mLastLocation.latitude // 갱신 된 위도
-        // mLastLocation.longitude // 갱신 된 경도
-
-    }
-
-
-    // 위치 권한이 있는지 확인하는 메서드
-    private fun checkPermissionForLocation(context: Context): Boolean {
-        // Android 6.0 Marshmallow 이상에서는 위치 권한에 추가 런타임 권한이 필요
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                true
-            } else {
-                // 권한이 없으므로 권한 요청 알림 보내기
-                ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_PERMISSION_LOCATION)
-                false
-            }
-        } else {
-            true
-        }
-    }
-
-    // 사용자에게 권한 요청 후 결과에 대한 처리 로직
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_PERMISSION_LOCATION) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                startLocationUpdates()
-
-            } else {
-                Log.d("ttt", "onRequestPermissionsResult() _ 권한 허용 거부")
-            }
-        }
-    }
 
     class CategoryAdapter(val context: Context, val myList: ArrayList<Category>): RecyclerView.Adapter<CategoryAdapter.Holder>() {
         var selectPos = -1
