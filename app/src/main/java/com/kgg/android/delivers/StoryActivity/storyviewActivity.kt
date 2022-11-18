@@ -1,4 +1,4 @@
-package storyActivity
+package com.kgg.android.delivers.StoryActivity
 
 
 import com.teresaholfeld.stories.StoriesProgressView
@@ -11,18 +11,22 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.kgg.android.delivers.R
-import com.google.firebase.auth.*
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.kgg.android.delivers.Story
+import com.kgg.android.delivers.data.Story
 //import data.user_data.signup_data
-import io.grpc.InternalChannelz.id
 import kotlinx.android.synthetic.main.activity_storydetail.*
-import kotlinx.android.synthetic.main.certification.*
 import java.text.SimpleDateFormat
 import java.util.*
+
+// 가경
+// 스토리 디테일 보기 페이지
+// activity_storydetail
+
+// 은지 - 채팅으로 넘어가기 구현
 
 class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListener {
     private var storiesProgressView: StoriesProgressView? = null
@@ -30,8 +34,10 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     private val storage: FirebaseStorage = FirebaseStorage.getInstance("gs://delivers-65049.appspot.com/")
     private val storageRef: StorageReference = storage.reference
     private var counter = 0
-    val firestore = FirebaseFirestore.getInstance()
     private var PROGRESS_COUNT = 0;
+    private lateinit var auth: FirebaseAuth
+    var uid = ""
+
 
     private var pressTime = 0L
     private var limit = 500L
@@ -63,10 +69,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_storydetail)
 
-        var registerDate = intent.getStringExtra("registerDate")
-
-
-/*        image?.setImageResource(resources[0])*/
+        auth = FirebaseAuth.getInstance()
+        uid = auth.currentUser?.uid.toString()
 
         counter = intent.getStringExtra("index")!!.toInt()
 
@@ -77,40 +81,38 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         image!!.setClipToOutline(true)
 
         PROGRESS_COUNT = StoryArr!!.size
-        Log.d("photo", currentStory.photo)
+        currentStory.photo?.let { Log.d("photo", it) }
         if (currentStory.photo != "") {
             val resourceId = currentStory.photo
-            storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Glide.with(this)
-                        .load(task.result)
-                        .into(image!!)
+            if (resourceId != null) {
+                storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Glide.with(this)
+                            .load(task.result)
+                            .into(image!!)
 
-                } else {
-                    image!!.setImageResource(R.mipmap.ic_launcher_round)
+                    } else {
+                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                    }
                 }
             }
         } else {
             image!!.setImageResource(R.mipmap.ic_launcher_round)
         }
         var description = findViewById<TextView>(R.id.description)
-        var title = currentStory.title
+        var title = currentStory.description
         description.setText(title)
 
         var area = findViewById<TextView>(R.id.area)
-        var lostLocation = currentStory.Location
+        var lostLocation = currentStory.location
         area.setText(lostLocation)
 
         var category = findViewById<TextView>(R.id.sort)
         var sort = currentStory.category
         category.setText(sort)
 
-        var userNickname = findViewById<TextView>(R.id.userNickname)
-        var wrtierId = currentStory.writer
-
         var currTime =  System.currentTimeMillis()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
-        Log.d("registerDate22", currentStory.registerDate)
         var registerTime = dateFormat.parse(currentStory.registerDate).time
 
         var diffTime: Long = (currTime - registerTime) / 1000
@@ -142,30 +144,12 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         daysbefore.text = msg
 
-//        firestore.collection("users").document(wrtierId)
-//            .get().addOnSuccessListener { document ->
-//                val item = signup_data(
-//
-//                    document["uid"] as String,
-//                    document["userId"] as String,
-//                    document["name"] as String,
-//                    document["registNum_front"] as String,
-//                    document["registNum_back"] as String,
-//                    document["nickname"] as String,
-//                    document["phoneNum"] as String,
-//
-//                    )
-//
-//                userNickname.text = item.nickname.toString()
-//            }
+
 
 
         storiesProgressView = findViewById(R.id.stories)
         storiesProgressView?.setStoriesCount(PROGRESS_COUNT)
         storiesProgressView?.setStoryDuration(3000L)
-        // or
-        // storiesProgressView.setStoriesCountWithDurations(durations);
-
         storiesProgressView?.setStoriesListener(this)
         storiesProgressView?.startStories(counter)
 
@@ -180,6 +164,21 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         val skip = findViewById<View>(R.id.skip)
         skip.setOnClickListener { storiesProgressView?.skip() }
         skip.setOnTouchListener(onTouchListener)
+
+
+
+        // 채팅방으로 전환
+
+        DMBtn.setOnClickListener {
+
+        }
+
+        // 본인이 올린 스토리면 채팅 버튼 숨기기
+        if( uid == currentStory.writer){
+            DMBtn.visibility = View. INVISIBLE
+        }
+
+
     }
 
     override fun onPrev() {
@@ -191,50 +190,49 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         if (currentStory.photo != "") {
             val resourceId = currentStory.photo
-            storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Glide.with(this)
-                        .load(task.result)
-                        .into(image!!)
-                } else {
-                    image!!.setImageResource(R.mipmap.ic_launcher_round)
+            if (resourceId != null) {
+                storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Glide.with(this)
+                            .load(task.result)
+                            .into(image!!)
+                    } else {
+                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                    }
                 }
             }
         } else {
             image!!.setImageResource(R.mipmap.ic_launcher_round)
         }
         var description = findViewById<TextView>(R.id.description)
-        var title = currentStory.title
+        var title = currentStory.description
         description.setText(title)
 
         var area = findViewById<TextView>(R.id.area)
-        var Location = currentStory.Location
+        var Location = currentStory.location
         area.setText(Location)
 
         var category = findViewById<TextView>(R.id.sort)
         var sort = currentStory.category
         category.setText(sort)
 
-        // or
-        // storiesProgressView.setStoriesCountWithDurations(durations);
-
-
-
     }
 
-    override fun onNext() {
+    override fun onNext() { // 옆으로 넘기기
         counter++
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
         var currentStory: Story = StoryArr!![counter]
         if (currentStory.photo != "") {
             val resourceId = currentStory.photo
-            storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Glide.with(this)
-                        .load(task.result)
-                        .into(image!!)
-                } else {
-                    image!!.setImageResource(R.mipmap.ic_launcher_round)
+            if (resourceId != null) {
+                storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Glide.with(this)
+                            .load(task.result)
+                            .into(image!!)
+                    } else {
+                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                    }
                 }
             }
         } else {
@@ -243,21 +241,16 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
         var description = findViewById<TextView>(R.id.description)
-        var title = currentStory.title
+        var title = currentStory.description
         description.setText(title)
 
         var area = findViewById<TextView>(R.id.area)
-        var Location = currentStory.Location
+        var Location = currentStory.location
         area.setText(Location)
-
-        var writerId = currentStory.writer
 
         var category = findViewById<TextView>(R.id.sort)
         var sort = currentStory.category
         category.setText(sort)
-
-        // or
-        // storiesProgressView.setStoriesCountWithDurations(durations);
 
 
     }
@@ -282,59 +275,6 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         super.onRestart()
     }
 
-
-/*
-    private fun getStories(userid: String?) {
-        var images: ArrayList<String>? = null
-        var storyids: ArrayList<String>? = null
-        val reference: DatabaseReferencece = Firebase.getInstance().getReference("Story")
-            .child(userid)
-        reference.addListenerForSingleValueEvent(object : ValueEventListener,
-            StoriesProgressView.StoriesListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                images?.clear()
-                storyids?.clear()
-                for (snapshot in dataSnapshot.getChildren()) {
-                    var story: Story = snapshot.getValue(Story::class.java)
-                    var timecurrent = System.currentTimeMillis()
-                    if (timecurrent > story.getTimestart() && timecurrent < story.getTimeend()) {
-                        (images as ArrayList<String>).add(story.getImageurl)
-                        (storyids as ArrayList<String>).add(story.getStoryid())
-                    }
-                }
-                storiesProgressView!!.setStoriesCount(images!!.size)
-                storiesProgressView!!.setStoryDuration(5000L)
-                storiesProgressView!!.setStoriesListener(this)
-                storiesProgressView!!.startStories(counter)
-                Glide.with(applicationContext).load(images.get(counter))
-                    .into(image!!)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-
-        })
-    }
-
-    private fun userInfo(userid: String?) {
-        val reference: DatabaseReferebce = Firebase.getInstance().getReference("Story")
-            .child(userid)
-        reference.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val user: User? = dataSnapshot.getValue(User::class.java)
-                Glide.with(applicationContext).load(user.getImageurl()).into(story_photo)
-                story_username.setText(user, getUsername())
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-
-
-        })
-    }
-*/
 
 
 }

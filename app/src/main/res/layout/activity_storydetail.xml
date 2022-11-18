@@ -131,7 +131,7 @@ android:layout_height="match_parent">
             android:text="치킨"
             android:textColor="@color/white"
             android:textSize="12dp"
-            app:layout_constraintBottom_toTopOf="@+id/finderTalkBtn"
+            app:layout_constraintBottom_toTopOf="@+id/DMBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -150,7 +150,7 @@ android:layout_height="match_parent">
             app:layout_constraintStart_toStartOf="parent" />
 
         <LinearLayout
-            android:id="@+id/finderTalkBtn"
+            android:id="@+id/DMBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="48dp"

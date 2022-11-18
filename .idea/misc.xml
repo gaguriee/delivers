@@ -3,13 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/dotted_border.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_handle.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/ic_location_on_white.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/ic_storyview_gradient.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/radio_selector.xml" value="0.1" />
         <entry key="app/src/main/res/drawable/rounded_corner_border.xml" value="0.1325" />
         <entry key="app/src/main/res/drawable/start_button.xml" value="0.1325" />
         <entry key="app/src/main/res/drawable/submit_box.xml" value="0.1325" />
         <entry key="app/src/main/res/drawable/text_field.xml" value="0.1325" />
         <entry key="app/src/main/res/drawable/text_form.xml" value="0.1325" />
+        <entry key="app/src/main/res/drawable/textbg_40white.xml" value="0.1" />
+        <entry key="app/src/main/res/layout/activity_fast_create.xml" value="0.7035095214843751" />
         <entry key="app/src/main/res/layout/activity_intro.xml" value="0.27276613937580163" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.13645833333333332" />
         <entry key="app/src/main/res/layout/activity_storydetail.xml" value="0.36542188979561074" />
