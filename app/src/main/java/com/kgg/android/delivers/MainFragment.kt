@@ -181,7 +181,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                     marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
                     marker.icon = OverlayImage.fromBitmap(bitmap)
                     // marker.tag = document["postId"] as String
-                    marker.tag = count
+                    marker.tag = document["postId"] as String
                     marker.onClickListener = this
                     markerArr.add(marker)
 
@@ -364,14 +364,15 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
     override fun onClick(p0: Overlay): Boolean {
         if(p0 is Marker){
+
+            var postid = p0.tag as String
             Toast.makeText(requireContext(),"${p0.tag}",Toast.LENGTH_SHORT).show()
             val intent2 = Intent(requireContext(), storyviewActivity::class.java)
-            intent2.putExtra("index", p0.tag.toString())
-            //    intent.putStringArrayListExtra("imgArr", imgArr)
-            //  intent.putStringArrayListExtra("desArr", desArr)
+            /*
+            intent2.putExtra("postid", p0.tag.toString())
             intent2.putParcelableArrayListExtra("StoryArr", storyList)
             startActivity(intent2)
-            activity?.overridePendingTransition(0, 0)
+            activity?.overridePendingTransition(0, 0)*/
 
             return true
         }
