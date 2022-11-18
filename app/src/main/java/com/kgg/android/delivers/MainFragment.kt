@@ -333,10 +333,14 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                 //Not in api-23, no need to prompt
                 userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             }
-            //위도 , 경도
             var lat = userNowLocation?.latitude
             var long = userNowLocation?.longitude
-            naverMap.cameraPosition = CameraPosition(LatLng(lat as Double,long as Double),16.0)
+            if(lat!=null&&long!=null){
+                //위도 , 경도
+
+                naverMap.cameraPosition = CameraPosition(LatLng(lat as Double,long as Double),16.0)
+            }
+
 
         }
 
