@@ -1,4 +1,4 @@
-package com.kgg.android.delivers.chatActivity
+package com.kgg.android.delivers.data
 
 class Message(
     val message: String? = null,
