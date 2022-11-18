@@ -366,13 +366,33 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         if(p0 is Marker){
 
             var postid = p0.tag as String
-            Toast.makeText(requireContext(),"${p0.tag}",Toast.LENGTH_SHORT).show()
-            val intent2 = Intent(requireContext(), storyviewActivity::class.java)
-            /*
-            intent2.putExtra("postid", p0.tag.toString())
-            intent2.putParcelableArrayListExtra("StoryArr", storyList)
-            startActivity(intent2)
-            activity?.overridePendingTransition(0, 0)*/
+            val intent = Intent(requireContext(), storyviewActivity::class.java)
+
+            intent.putExtra("postId", postid)
+            intent.putExtra("index","0")
+            var storyList = arrayListOf<Story>()
+            firestore.collection("story").document("$postid")
+                .get().addOnSuccessListener { document ->
+                    val item = Story(
+                        document["writer"] as String,
+                        document["location"] as String,
+                        document["photo"] as String,
+                        document["description"] as String,
+                        document["category"] as String,
+                        document["latitude"] as Double,
+                        document["longitude"] as Double,
+                        document["registerDate"] as String,
+                        document["postId"] as String,
+                    )
+                    storyList.add(item)
+                    Log.d("storyViewActivity_only","Error3 getting documents:")
+                    intent.putParcelableArrayListExtra("StoryArr", storyList)
+                    context?.startActivity(intent)
+
+                    Log.d("storyViewActivity_only"," no Error getting documents:")
+                }.addOnFailureListener { exception ->
+                    Log.d("storyViewActivity_only","Error getting documents: $exception")
+                }
 
             return true
         }
