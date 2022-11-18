@@ -95,15 +95,11 @@ class UploadActivity: AppCompatActivity() {
 
     private fun createFastLost() {
         val intent = Intent(applicationContext, MainActivity::class.java)
-        startActivity(intent)
-        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
 
         val title = postTitle.text
 
         val fbFirestore = Firebase.firestore
         val fbFireStorage = FirebaseStorage.getInstance("gs://delivers-65049.appspot.com/")
-
-
 
         val story = Story()
 
@@ -162,6 +158,9 @@ class UploadActivity: AppCompatActivity() {
 //                        }
 //                    }
 //                }
+
+                startActivity(intent)
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
 
 
 
