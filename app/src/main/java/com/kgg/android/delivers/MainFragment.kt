@@ -49,6 +49,10 @@ import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.OverlayImage
 import kotlin.collections.ArrayList
 
+// 메인 페이지
+// 가경 - 스토리 리스트 조회 -> 스토리 디테일
+// 보영 - 지도 조회 (Naver Map API)
+
 class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
     private lateinit var auth: FirebaseAuth

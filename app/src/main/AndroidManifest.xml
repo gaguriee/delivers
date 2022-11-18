@@ -38,6 +38,10 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".chatActivity.ChatActivity"
+            android:exported="true" />
         <activity
             android:name=".StoryActivity.storyviewActivity"
             android:exported="true" />

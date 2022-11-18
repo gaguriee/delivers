@@ -21,6 +21,9 @@ import com.kgg.android.delivers.data.Story
 import kotlinx.android.synthetic.main.activity_storydetail.*
 import java.text.SimpleDateFormat
 import java.util.*
+import android.content.Intent
+import android.widget.LinearLayout
+import com.kgg.android.delivers.chatActivity.ChatActivity
 
 // 가경
 // 스토리 디테일 보기 페이지
@@ -79,6 +82,13 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         image = findViewById<View>(R.id.image) as ImageView
         image!!.background = getResources().getDrawable(R.drawable.rounded_corner_border, null)
         image!!.setClipToOutline(true)
+
+        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
+        val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
+        chatButton.setOnClickListener{
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("postId", currentStory)
+        }
 
         PROGRESS_COUNT = StoryArr!!.size
         currentStory.photo?.let { Log.d("photo", it) }

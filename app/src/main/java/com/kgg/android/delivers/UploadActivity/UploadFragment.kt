@@ -43,6 +43,7 @@ import kotlin.collections.HashMap
 
 // 보영
 // 스토리 위치 및 카테고리 등록 페이지
+// Kakao Map API
 
 class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEventListener{
 
