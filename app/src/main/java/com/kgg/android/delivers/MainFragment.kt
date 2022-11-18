@@ -35,14 +35,21 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.data.Story
 import com.kgg.android.delivers.databinding.FragmentMainBinding
-import net.daum.mf.map.api.MapPOIItem
-import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapView
 import com.kgg.android.delivers.StoryActivity.storyviewActivity
+import com.kgg.android.delivers.UploadActivity.UploadFragment
+import com.kgg.android.delivers.databinding.FragmentUploadBinding
+import com.naver.maps.geometry.LatLng
+import com.naver.maps.map.CameraPosition
 import java.util.*
+import com.naver.maps.map.NaverMap
+import com.naver.maps.map.MapView
+import com.naver.maps.map.OnMapReadyCallback
+import com.naver.maps.map.overlay.Marker
+import com.naver.maps.map.overlay.Overlay
+import com.naver.maps.map.overlay.OverlayImage
+import kotlin.collections.ArrayList
 
-
-class MainFragment : Fragment() {
+class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
     private lateinit var auth: FirebaseAuth
     var uid = ""
@@ -52,14 +59,17 @@ class MainFragment : Fragment() {
     var latitude = 0.0
     var longitude = 0.0
     var currentLocation = ""
-    private lateinit var mapview:MapView
-    var mapViewContainer:RelativeLayout? = null
-    lateinit var bindingFin: FragmentMainBinding
 
-    private var mFusedLocationProviderClient: FusedLocationProviderClient? = null // 현재 위치를 가져오기 위한 변수
-    lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
-    var mLocationRequest: LocationRequest = LocationRequest.create()// 위치 정보 요청의 매개변수를 저장하는
-    private val REQUEST_PERMISSION_LOCATION = 10
+
+    // Main Map
+    companion object{
+        lateinit var naverMain: NaverMap
+    }
+
+    private lateinit var main_map: MapView
+    private lateinit var binding: FragmentMainBinding
+    var markerArr = ArrayList<Marker>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,6 +114,8 @@ class MainFragment : Fragment() {
             currentplace.setText(currentLocation.split(" ").last())
             Log.d("currentlocation", currentplace.text.toString())
         }
+
+
     }
 
     override fun onCreateView(
@@ -111,14 +123,12 @@ class MainFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        val binding = FragmentMainBinding.inflate(inflater, container, false)
-        bindingFin = FragmentMainBinding.inflate(inflater, container, false)
-        mapview = MapView(requireActivity()).also{
-            mapViewContainer = RelativeLayout(requireContext())
-            mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT)
-            binding.mapContainer.addView(mapViewContainer)
-            mapViewContainer?.addView(it)
-        }
+        binding = FragmentMainBinding.inflate(inflater, container, false)
+
+        main_map = binding.mainMap
+        main_map.onCreate(savedInstanceState)
+        //
+
 
 
         val sAdapter = StoriesAdapter(storyList, requireContext())
@@ -135,7 +145,9 @@ class MainFragment : Fragment() {
         Log.d("CheckStoryList" , storyList.toString())
         Log.d("firestore" , firestore.toString())
 
-        var markerArr = ArrayList<MapPOIItem>()
+
+
+
 
         doccol.get()
             .addOnSuccessListener { result ->
@@ -153,18 +165,18 @@ class MainFragment : Fragment() {
                         document["registerDate"] as String,
                         document["postId"] as String,
                     )
-                    var marker = MapPOIItem()
-                    marker.itemName = document["category"] as String // 어차피 화면에는 안나옴
-                    marker.isDraggable = true //
-                    marker.isCustomImageAutoscale = false
-                    marker.isShowCalloutBalloonOnTouch = false
-                    // 제일 처음엔 학교 주소로 초기화
-                    marker.mapPoint =MapPoint.mapPointWithGeoCoord(document["latitude"] as Double, document["longitude"] as Double)
-                    var bitmap:Bitmap = createUserBitmap(check_category(document["category"] as String))
-                    marker.markerType = MapPOIItem.MarkerType.CustomImage
-                    marker.customImageBitmap = bitmap
-                    marker.userObject = count
+
+                    var bitmap = createUserBitmap(check_category(document["category"] as String))
+
+                    var marker = Marker()
+                    marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
+                    marker.icon = OverlayImage.fromBitmap(bitmap)
+                    // marker.tag = document["postId"] as String
+                    marker.tag = count
+                    marker.onClickListener = this
                     markerArr.add(marker)
+
+
 
 
 
@@ -224,7 +236,9 @@ class MainFragment : Fragment() {
 
                 if (sAdapter != null) {
                     sAdapter.notifyDataSetChanged()
+                    main_map.getMapAsync(this)
                 }
+                main_map.getMapAsync(this)
 
                 Log.d("CheckStoryList" , storyList.toString())
             }.addOnFailureListener { exception ->
@@ -254,12 +268,59 @@ class MainFragment : Fragment() {
 
         var gpsBtn = binding.currentGpsMain // 현재 위치 버튼
 
+//        // gps 버튼 눌렀을 때 현재 위치로 이동되도록
+//        gpsBtn.setOnClickListener{
+//
+//
+//            val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//            var userNowLocation: Location? = null
+//            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                //User has previously accepted this permission
+//                if (ActivityCompat.checkSelfPermission(requireContext(),
+//                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                    userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+//                }
+//            } else {
+//                //Not in api-23, no need to prompt
+//                userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+//            }
+//
+//
+//            //위도 , 경도
+//            var lat = userNowLocation?.latitude
+//            var long = userNowLocation?.longitude
+//
+//
+//        }
+
+        main_map.getMapAsync(this)
+
+
+
+
+        return binding.root
+
+    }
+    override fun onMapReady(naverMap: NaverMap) {
+        MainFragment.naverMain = naverMap
+
+        val uiSettings = naverMap.uiSettings
+
+        // 제일 처음
+
+        var camPos = CameraPosition(
+            LatLng(37.631472, 127.075987),
+            16.0
+        )
+        naverMap.cameraPosition = camPos
+
+        for(i in markerArr){
+            i.map = naverMap
+        }
+
+
         // gps 버튼 눌렀을 때 현재 위치로 이동되도록
-        gpsBtn.setOnClickListener{
-
-            mapview.currentLocationTrackingMode =
-                MapView.CurrentLocationTrackingMode.TrackingModeOnWithoutHeading  //이 부분
-
+        binding.currentGpsMain.setOnClickListener{
             val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var userNowLocation: Location? = null
             if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -272,46 +333,39 @@ class MainFragment : Fragment() {
                 //Not in api-23, no need to prompt
                 userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             }
-
-            // Toast.makeText(requireContext(),"좌표 ${longitude}  ${latitude}",Toast.LENGTH_SHORT).show()
-
             //위도 , 경도
             var lat = userNowLocation?.latitude
             var long = userNowLocation?.longitude
-            val uNowPosition = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
-
-            // 현 위치에 마커 찍기
-            mapview.addPOIItems(markerArr.toArray( arrayOfNulls<MapPOIItem>(markerArr.size)))
-            mapview.setPOIItemEventListener(object:MapView.POIItemEventListener{
-                override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
-                    val intent = Intent(requireContext(), storyviewActivity::class.java)
-                    var position = poiItem?.userObject as Int
-
-                    intent.putExtra("index", position.toString())
-                    //    intent.putStringArrayListExtra("imgArr", imgArr)
-                    //  intent.putStringArrayListExtra("desArr", desArr)
-                    intent.putParcelableArrayListExtra("StoryArr", storyList)
-                    startActivity(intent)
-                    activity?.overridePendingTransition(0, 0)
-                }
-                override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
-                }
-                override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
-                }
-                override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
-                }
-            })
-
-            mapview.setMapCenterPoint(uNowPosition,true)
-            mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
-            Toast.makeText(requireContext(),"${check_category("chicken")}",Toast.LENGTH_SHORT).show()
+            naverMap.cameraPosition = CameraPosition(LatLng(lat as Double,long as Double),16.0)
 
         }
 
+        // var mGeo: Geocoder = Geocoder(requireContext(), Locale.KOREAN)
+        // var mResultL: List<Address>? = null
 
-        return binding.root
+
+
+
 
     }
+
+    override fun onClick(p0: Overlay): Boolean {
+        if(p0 is Marker){
+            Toast.makeText(requireContext(),"${p0.tag}",Toast.LENGTH_SHORT).show()
+            val intent2 = Intent(requireContext(), storyviewActivity::class.java)
+            intent2.putExtra("index", p0.tag.toString())
+            //    intent.putStringArrayListExtra("imgArr", imgArr)
+            //  intent.putStringArrayListExtra("desArr", desArr)
+            intent2.putParcelableArrayListExtra("StoryArr", storyList)
+            startActivity(intent2)
+            activity?.overridePendingTransition(0, 0)
+
+            return true
+        }
+        return false
+    }
+
+
     fun check_category(category:String):Int{
         var id = 0
         when(category)
@@ -329,24 +383,35 @@ class MainFragment : Fragment() {
         return id
     }
 
+    override fun onStart() {
+        super.onStart()
+        main_map.onStart()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        main_map.onResume()
+    }
+
     override fun onPause() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
         super.onPause()
+        main_map.onPause()
+    }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        main_map.onSaveInstanceState(outState)
     }
 
     override fun onDestroyView() {
-        mapViewContainer?.removeView(mapview)
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
         super.onDestroyView()
+        main_map.onDestroy()
     }
 
-    override fun onDestroy() {
-        bindingFin.mapContainer.removeView(mapview)
-        bindingFin.mapContainer.removeAllViews()
-        super.onDestroy()
+    override fun onLowMemory() {
+        super.onLowMemory()
+        main_map.onLowMemory()
     }
 
     // 커스텀 마커 이미지
@@ -493,5 +558,7 @@ class MainFragment : Fragment() {
         }
 
     }
+
+
 
 }
