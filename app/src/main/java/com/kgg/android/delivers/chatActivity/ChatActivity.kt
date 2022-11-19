@@ -13,6 +13,7 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
@@ -37,21 +38,23 @@ class ChatActivity : AppCompatActivity() {
         FirebaseStorage.getInstance("gs://delivers-65049.appspot.com/")
     private val storageRef: StorageReference = storage.reference
     val firestore = FirebaseFirestore.getInstance()
-//
+
     lateinit var btn_quit: ImageButton
     lateinit var btn_send: Button
     lateinit var chat_title: TextView
     lateinit var edt_message: EditText
     lateinit var recyclerView: RecyclerView
     lateinit var chatRoom: ChatRoom
-    lateinit var destinationUid: String
+
     lateinit var myUid: String
-    lateinit var postId:String
-    private var chatRoomUid: String? = null
+    lateinit var chatRoomUid: String
+    lateinit var destinationUid: String
+    lateinit var postId: String
+
 
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     private val fireStore = FirebaseFirestore.getInstance()
-
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,78 +73,45 @@ class ChatActivity : AppCompatActivity() {
         //상대방 닉네임 연결
         val docCol = fireStore.collection("users") //작업할 컬렉션
         docCol
-            .whereEqualTo("uid","$destinationUid") //uid가 destinationUid와 일치하는 문서 가져오기
+            .whereEqualTo("uid", "$destinationUid") //uid가 destinationUid와 일치하는 문서 가져오기
             .get()
             .addOnSuccessListener { result ->
-                for(document in result){
+                for (document in result) {
                     var nickname = document["nickname"] as String
                     chat_title.text = nickname
-                    Log.d("chatting","nickname: $nickname" )
+                    Log.d("chatting", "nickname: $nickname")
                     //채팅방 제목을 상대방 닉네임으로 설정
                 }
 
             }
-            .addOnFailureListener{exception ->
+            .addOnFailureListener { exception ->
                 Log.d("Chatting", "Error getting documents: $exception")
             }
 
 
 
 
-        if (chatRoomUid.isNullOrBlank()) { //채팅방 키가 없으면 생성
+        if (chatRoomUid.equals("")) { //채팅방 키가 없으면 생성
             setupChatRoomId()
-            setupRecycler()
-        }else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
-            setupRecycler()
-//        recyclerView = binding.recyclerMessages
 
-//        btn_send.setOnClickListener {
-//            Log.d("dest : ", "$destinationUid")
-//            val chatRoom = ChatRoom()
-//            chatRoom.users.put(myUid.toString(), true)
-//            chatRoom.users.put(destinationUid!!, true)
-//
-//
-//            //메세지 저장
-//            val message = Message(myUid, edt_message.text.toString(), currentTime)
-//            if (chatRoomUid == null) {
-//                btn_send.isEnabled = false
-//                fireDatabase.child("chatrooms").push().setValue(chatRoom)
-//                    .addOnSuccessListener {
-//                        //create chatroom
-//                        checkChatRoom()
-//                        //메세지 보내기
-//                        Handler().postDelayed({
-//                            Log.d("chatRoomUid : ", "$chatRoomUid")
-//                            fireDatabase.child("chatrooms").child(chatRoomUid.toString())
-//                                .child("messages").push().setValue(message)
-//                            binding.edtMessage.text = null
-//
-//                        }, 1000L)
-//                        Log.d("chatUidNull dest", "$destinationUid")
-//                    }
-//            } else {
-//                fireDatabase.child("chatrooms").child(chatRoomUid.toString())
-//                    .child("messages").push().setValue(message)
-//                binding.edtMessage.text = null
-//                Log.d("chatUidNotNull dest", "$destinationUid")
-//
-//            }
-//
-//        }
-//        checkChatRoom()
-//
-//
+        } else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
+            setupRecycler()
     }
 
+
     fun initializeProperty(){ //변수 초기화
-        myUid = Firebase.auth.currentUser?.uid.toString()!!
+        auth = FirebaseAuth.getInstance()
+//        myUid = auth.currentUser?.uid.toString()!!
 //        fireDatabase = FirebaseDatabase.getInstance().reference!!
 
 //        chatRoom = (intent.getSerializableExtra("ChatRoom")) as ChatRoom //인텐트로부터 chatRoom 정보 넘겨받음
-        chatRoomUid = intent.getStringExtra("ChatRoomUid") //intent로부터 chatRoomUid넘겨받음
-        destinationUid = intent.getStringExtra("destinationUid")!! //intent로부터 destinationUid 넘겨받음
-        postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
+//
+
+        Log.d("Chatting", "this is chatActivity")
+        myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
+       chatRoomUid = intent.getStringExtra("ChatRoomUid")!! //intent로부터 chatRoomUid넘겨받음
+       destinationUid = intent.getStringExtra("destinationUid")!! //intent로부터 destinationUid 넘겨받음
+       postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
 
 
     }
@@ -156,9 +126,6 @@ class ChatActivity : AppCompatActivity() {
             try {//메세지 전송
                 Log.d("dest : ", "$destinationUid")
 
-//                var chatRoom = ChatRoom()
-//                chatRoom.users.put(myUid, true)
-//                chatRoom.users.put(destinationUid, true)
 
                 var message = Message(edt_message.text.toString(), myUid, getDateTimeString()) //메세지 정보 instance생성
                 message.senderUid?.let { it1 -> Log.d("Chatting", it1.toString()) }
@@ -237,6 +204,7 @@ class ChatActivity : AppCompatActivity() {
                     }
                 }
             })
+        setupRecycler()
     }
 
     fun setupRecycler() { //채팅 메세지 목록 초기화 및 업데이트
@@ -249,8 +217,6 @@ class ChatActivity : AppCompatActivity() {
 
 //
 
-
-
     inner class RecyclerViewAdapter(
         private val context: Context,
         private val chatRoomUid: String?,
@@ -259,10 +225,9 @@ class ChatActivity : AppCompatActivity() {
 
         private var messages = ArrayList<Message>()
         var messageKeys: ArrayList<String> = arrayListOf()
-//        private var user: user_data? = null
-//        val myUid = "jj"
-        private val myUid = Firebase.auth.currentUser?.uid.toString()!!
 
+//        val myUid = auth.currentUser?.uid.toString()!!
+        val myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
         val recyclerView = (context as ChatActivity).recyclerView
 
 
