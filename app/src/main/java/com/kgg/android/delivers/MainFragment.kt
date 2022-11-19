@@ -178,21 +178,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         document["registerDate"] as String,
                         document["postId"] as String,
                     )
-
-                    var bitmap = createUserBitmap(check_category(document["category"] as String))
-
-                    var marker = Marker()
-                    marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
-                    marker.icon = OverlayImage.fromBitmap(bitmap)
-                    // marker.tag = document["postId"] as String
-                    marker.tag = document["postId"] as String
-                    marker.onClickListener = this
-                    markerArr.add(marker)
-
-
-
-
-
                     var targetLocation = Location("")
                     targetLocation.latitude =item.latitude!!
                     targetLocation.longitude = item.longitude!!
@@ -249,11 +234,43 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
                 if (sAdapter != null) {
                     sAdapter.notifyDataSetChanged()
-                    main_map.getMapAsync(this)
+
                 }
-                main_map.getMapAsync(this)
+
 
                 Log.d("CheckStoryList" , storyList.toString())
+            }.addOnFailureListener { exception ->
+                Log.w("ListActivity22", "Error getting documents: $exception")
+            }
+        // 마커 업데이트
+        doccol.get()
+            .addOnSuccessListener { result ->
+                var count = 0
+                for (document in result) {
+                    val item = Story(
+                        document["writer"] as String,
+                        document["location"] as String,
+                        document["photo"] as String,
+                        document["description"] as String,
+                        document["category"] as String,
+                        document["latitude"] as Double,
+                        document["longitude"] as Double,
+                        document["registerDate"] as String,
+                        document["postId"] as String,
+                    )
+
+                    var bitmap = createUserBitmap(check_category(document["category"] as String))
+
+                    var marker = Marker()
+                    marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
+                    marker.icon = OverlayImage.fromBitmap(bitmap)
+                    // marker.tag = document["postId"] as String
+                    marker.tag = document["postId"] as String
+                    marker.onClickListener = this
+                    markerArr.add(marker)
+                }
+
+                main_map.getMapAsync(this)
             }.addOnFailureListener { exception ->
                 Log.w("ListActivity22", "Error getting documents: $exception")
             }
