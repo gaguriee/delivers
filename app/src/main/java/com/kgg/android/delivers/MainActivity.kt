@@ -16,7 +16,7 @@ import com.kgg.android.delivers.chatActivity.ChatFragment
 
 val fragmentMain by lazy { MainFragment() }
 val fragmentUpload by lazy { UploadFragment() }
-
+val fragmentMypage by lazy { MyPageFragment() }
 //private val fragmentCreate by lazy { basic_createFragment() }
 private val fragmentChat by lazy { ChatFragment() }
 //private val fragmentMore by lazy { moreFragment() }
@@ -33,7 +33,6 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
         toolbar.setTitle("")
-        toolbar.setSubtitle("")
         initNavigationBar()
     }
 
@@ -53,9 +52,9 @@ class MainActivity : AppCompatActivity() {
                     R.id.chat -> {
                         change(fragmentChat)
                     }
-//                    R.id.mypage -> {
-//                        change(fragmentChat)
-//                    }
+                    R.id.mypage -> {
+                        change(fragmentMypage)
+                    }
                 }
                 true
             }
