@@ -23,7 +23,15 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.content.Intent
 import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.core.content.ContentProviderCompat.requireContext
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.getValue
 import com.kgg.android.delivers.chatActivity.ChatActivity
+import com.kgg.android.delivers.data.ChatRoom
 
 // 가경
 // 스토리 디테일 보기 페이지
@@ -40,6 +48,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     private var PROGRESS_COUNT = 0;
     private lateinit var auth: FirebaseAuth
     var uid = ""
+    private val fireDatabase = FirebaseDatabase.getInstance().reference
 
 
     private var pressTime = 0L
@@ -74,6 +83,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         auth = FirebaseAuth.getInstance()
         uid = auth.currentUser?.uid.toString()
+//        uid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
 
         counter = intent.getStringExtra("index")!!.toInt()
 
@@ -83,13 +93,13 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         image!!.background = getResources().getDrawable(R.drawable.rounded_corner_border, null)
         image!!.setClipToOutline(true)
 
-        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
-        val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
-        chatButton.setOnClickListener{
-            val intent = Intent(this, ChatActivity::class.java)
-            intent.putExtra("postId", currentStory.postId)
-            Log.d("story","${currentStory.postId}")
-        }
+//        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
+//        val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
+//        chatButton.setOnClickListener{
+//            val intent = Intent(this, ChatActivity::class.java)
+//            intent.putExtra("postId", currentStory.postId)
+//            Log.d("story","${currentStory.postId}")
+//        }
 
         PROGRESS_COUNT = StoryArr!!.size
         currentStory.photo?.let { Log.d("photo", it) }
@@ -181,6 +191,58 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         // 채팅방으로 전환
 
         DMBtn.setOnClickListener {
+            try {
+                val intent = Intent(this, ChatActivity::class.java)
+                intent.putExtra("destinationUid", currentStory.writer) //상대방의 id를 넘겨줌
+                Log.d("Chatting","destinationUid: ${currentStory.writer}")
+                intent.putExtra("postId", currentStory.postId) //채팅방 포스트 id넘겨줌
+                var postId = currentStory.postId
+                Log.d("Chatting", "postID : ${currentStory.postId}")
+
+                fireDatabase.child("chatrooms")
+                    .orderByChild("postId")
+                    .equalTo(postId)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d("Chatting","Fail to read data")
+                        }
+
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if(snapshot.hasChildren()) {
+                                for (data in snapshot.children) {
+                                    var chatRoom = data.getValue<ChatRoom>()
+                                    Log.d("Chatting","ChatRoom information: $chatRoom")
+                                    if (chatRoom != null) {
+                                        if(chatRoom.users.getValue("WoKw1NJYG8TB9Z4GDWh4H5e9ieh1")){
+                                            var chatRoomUid = data.key!!
+                                            intent.putExtra("ChatRoomUid", chatRoomUid)
+                                            Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
+
+                                            startActivity(intent)
+                                        }
+                                        else {
+                                            intent.putExtra("ChatRoomUid","")
+                                            startActivity(intent)
+                                        }
+
+
+                                    }
+                                    break
+                                }
+                            }else{
+                                    intent.putExtra("ChatRoomUid","")
+                                    startActivity(intent)
+                                }
+                        }
+
+                    })
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this,"채팅방 이동 중 문제가 발생하였습니다.", Toast.LENGTH_SHORT).show()
+                Log.d("chatting", "채팅방 이동 중 문제 발생")
+            } //에러 처리
 
         }
 

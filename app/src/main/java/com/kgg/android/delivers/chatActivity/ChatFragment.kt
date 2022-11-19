@@ -9,20 +9,27 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.R
 import com.kgg.android.delivers.data.ChatRoom
 import com.kgg.android.delivers.data.Message
 import com.kgg.android.delivers.databinding.FragmentChatBinding
 import com.kgg.android.delivers.databinding.ItemChatBinding
+import java.lang.IndexOutOfBoundsException
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -34,11 +41,11 @@ class ChatFragment : Fragment() {
         }
 
     }
-//    private lateinit var auth: FirebaseAuth
-//    private val fireDatabase = Firebase.database("https://delivers-65049-default-rtdb.firebaseio.com/")
+    private lateinit var auth: FirebaseAuth
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     private val fireStore = FirebaseFirestore.getInstance()
-
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance("gs://delivers-65049.appspot.com/")
+    private val storageRef: StorageReference = storage.reference
 
     //메모리에 올라갔을 때
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,29 +62,12 @@ class ChatFragment : Fragment() {
           savedInstanceState: Bundle?
     ): View? {
 
+
         // Inflate the layout for this fragment
         val binding = FragmentChatBinding.inflate(inflater, container, false)
         val cAdapter = binding.chatRecycler
         cAdapter.layoutManager = LinearLayoutManager(requireContext())
         cAdapter.adapter = RecyclerViewAdapter()
-
-//        val chatRooms = arrayListOf<ChatRoom>() //해당 유저 채팅방 목록
-//        val chatRoomKeys: ArrayList<String> = arrayListOf() //채팅방 키 목록
-//        var myUid : String? = null //접속한 유저id
-//        val destinationUsers: ArrayList<String> = arrayListOf() //상대방 uid를 담기 위한 목록
-//
-//        fireDatabase.child("chatrooms")
-//            .orderByChild("users/$myUid").equalTo(true) //realtime db에서 myUid의 값이 true인걸 가져옴
-//            .addListenerForSingleValueEvent(object: ValueEventListener {
-//                override fun onCancelled(error: DatabaseError) {
-//                    Log.d("Chatting","Fail to read data.")
-//                }
-//                override fun onDataChange(snapshot: DataSnapshot) {
-//
-//                    Log.d("chatting", "item 개수")
-//                    //데이터가 변경되었음을 알림
-//                }
-//            })
 
 
 
@@ -96,30 +86,39 @@ class ChatFragment : Fragment() {
 //            myUid = Firebase.auth.currentUser?.uid.toString()
 
             //접속한 userid
-            myUid = Firebase.auth.currentUser?.uid.toString()!!
+//            auth = FirebaseAuth.getInstance()
+//            myUid = auth.currentUser?.uid.toString()!!
+            myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
             Log.d("Chatting", myUid!!.toString())
 
-            //자신이 포함된 채팅방의 uid를 모두 가져옴.
-            fireDatabase.child("chatrooms")
-                .orderByChild("users/${myUid}").equalTo(true) //realtime db에서 myUid의 값이 true인걸 가져옴
-                .addValueEventListener(object: ValueEventListener {
-                override fun onCancelled(error: DatabaseError) {
-                    Log.d("Chatting","Fail to read data.")
-                }
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    chatRooms.clear()
-                    var count = 0
-                    for(data in snapshot.children){
-                        val item = data.getValue<ChatRoom>()
-                        chatRooms.add(item!!)
-                        chatRoomKeys.add(data.key!!) //해당 채팅방의 키를 담음
-                        count = count + 1
-                        Log.d("chatting", "chatRoomKey : ${data.key}")
-                    }
-                    Log.d("chatting", "item 개수 : $count")
-                    notifyDataSetChanged() //데이터가 변경되었음을 알림
-                }
-            })
+            try {
+                //자신이 포함된 채팅방의 uid를 모두 가져옴.
+                fireDatabase.child("chatrooms")
+                    .orderByChild("users/${myUid}")
+                    .equalTo(true) //realtime db에서 myUid의 값이 true인걸 가져옴
+                    .addValueEventListener(object : ValueEventListener {
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d("Chatting", "Fail to read data.")
+                        }
+
+                        override fun onDataChange(snapshot: DataSnapshot) {
+//                    chatRooms.clear()
+                            var count = 0
+                            for (data in snapshot.children) {
+                                val item = data.getValue<ChatRoom>()
+                                chatRooms.add(item!!)
+                                chatRoomKeys.add(data.key!!) //해당 채팅방의 키를 담음
+                                count += 1
+                                Log.d("chatting", "item : $item")
+                                Log.d("chatting", "chatRoomKey : ${data.key}")
+                            }
+                            Log.d("chatting", "item 개수 : $count")
+                            notifyDataSetChanged() //데이터가 변경되었음을 알림
+                        }
+                    })
+            }catch(e:Exception){
+                e.printStackTrace()
+            }
 
         }
 
@@ -130,7 +129,7 @@ class ChatFragment : Fragment() {
         }
 
         inner class CustomViewHolder(val binding: ItemChatBinding) : RecyclerView.ViewHolder(binding.root) {
-//                val imageView: ImageView = binding.foodIcon //유저 프로필
+                val imageView: ImageView = binding.foodIcon //해당 게시물 사진
                 val textView: TextView = binding.userNickName //유저 닉네임
                 val textViewLastMessage: TextView = binding.LastMessage //마지막 메시지
         }
@@ -141,7 +140,7 @@ class ChatFragment : Fragment() {
 
             //채팅방에 있는 유저 모두 체크
             for (user in chatRooms[position].users?.keys!!) {
-                if (!user.equals(myUid)) {//본인 제외
+                if (user != myUid) {//본인 제외
                     destinationUid = user
                     destinationUsers.add(destinationUid) //상대방의 uid를 destinationUsers에 저장
                     Log.d("chatting","destinationUid : $destinationUid")
@@ -166,26 +165,41 @@ class ChatFragment : Fragment() {
                 }
 
 
-//            fireDatabase.child("users").child("$destinationUid").addListenerForSingleValueEvent(
-//                object : ValueEventListener {
-//                    override fun onCancelled(error: DatabaseError) {
-//                    }
-//
-//                    override fun onDataChange(snapshot: DataSnapshot) {
-//                        val user = snapshot.getValue<user_data>()
-////                        Glide.with(holder.itemView.context).load(user?.profileImageUrl)
-////                            .apply(RequestOptions().circleCrop())
-////                            .into(holder.imageView)
-//                        holder.textView.text = user?.nickname
-//                    }
-//                })
+            //스토리 사진 프로필로 띄우기
+            val storyDocCol = fireStore.collection("story")
+            storyDocCol
+                .whereEqualTo("postId", chatRooms[position].postId)
+                .get()
+                .addOnSuccessListener { result ->
+                    for(document in result){
+                        var resourceId = document["photo"] as String
+                        if (resourceId != null) {
+                            storageRef.child(resourceId).downloadUrl.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    Glide.with(this@ChatFragment)
+                                        .load(task.result)
+                                        .into(holder.imageView!!)
+
+                                } else {
+                                    holder.imageView!!.setImageResource(R.mipmap.ic_launcher_round)
+                                }
+                            }
+                        }
+                    }
+                }
+
 
             //메세지 내림차순 정렬 후 마지막 메시지의 키 값을 가짐
-            val messageMap = TreeMap<String, Message>(reverseOrder()) //TreeMap을 역순으로 선언
-            messageMap.putAll(chatRooms[position].messages) //chatRoom의 messages를 모두 넣어줌
-            val lastMessageKey = messageMap.keys.toTypedArray()[0] //toTypedArray()배열로 변환한 뒤 첫번째 값을 lastMessageKey에 넣어줌
+            try {
+                val messageMap = TreeMap<String, Message>(reverseOrder()) //TreeMap을 역순으로 선언
+                messageMap.putAll(chatRooms[position].messages) //chatRoom의 messages를 모두 넣어줌
+                val lastMessageKey =
+                    messageMap.keys.toTypedArray()[0] //toTypedArray()배열로 변환한 뒤 첫번째 값을 lastMessageKey에 넣어줌
+                holder.textViewLastMessage.text = chatRooms[position].messages[lastMessageKey]?.message
+            }catch(e: IndexOutOfBoundsException){
+                Log.d("Chatting","${e.printStackTrace()}")
+            }
 
-            holder.textViewLastMessage.text = chatRooms[position].messages[lastMessageKey]?.message
 
 
             //채팅 리스트에서 선택 시 이동
@@ -197,6 +211,7 @@ class ChatFragment : Fragment() {
 //                    intent.putExtra("ChatRoom", chatRooms[position]) //채팅방 정보 넘겨줌
                     intent.putExtra("ChatRoomUid", chatRoomKeys[position]) //채팅방 키 정보 넘겨줌
                     Log.d("Chatting","ChatRoomUid: ${chatRoomKeys[position]}")
+                    intent.putExtra("postId", chatRooms[position].postId) //채팅방 포스트 id넘겨줌
 
                     context?.startActivity(intent)
                     (context as AppCompatActivity).finish()
