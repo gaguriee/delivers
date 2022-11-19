@@ -7,6 +7,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('D:\\delivers\\delivers\\delivers.jks')
+            storePassword 'delivers'
+            keyAlias 'delivers'
+            keyPassword 'delivers'
+        }
+    }
     compileSdk 32
 
     defaultConfig {
