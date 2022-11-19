@@ -49,6 +49,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     private lateinit var auth: FirebaseAuth
     var uid = ""
     private val fireDatabase = FirebaseDatabase.getInstance().reference
+    var userInfo = FirebaseFirestore.getInstance().collection("users") //작업할 컬렉션
 
 
     private var pressTime = 0L
@@ -84,6 +85,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         auth = FirebaseAuth.getInstance()
         uid = auth.currentUser?.uid.toString()
 //        uid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
+
+
 
         counter = intent.getStringExtra("index")!!.toInt()
 
@@ -164,6 +167,21 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         }
 
         daysbefore.text = msg
+
+        // 닉네임 가져오기
+        userInfo
+            .whereEqualTo("uid", "${currentStory.writer}") //uid가 destinationUid와 일치하는 문서 가져오기
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    var nickname = document["nickname"] as String
+                    findViewById<TextView>(R.id.userNickname).text = nickname.toString()
+                }
+
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Chatting", "Error getting documents: $exception")
+            }
 
 
 
@@ -260,6 +278,21 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
         var currentStory: Story = StoryArr!![counter]
 
+        // 닉네임 가져오기
+        userInfo
+            .whereEqualTo("uid", "${currentStory.writer}") //uid가 destinationUid와 일치하는 문서 가져오기
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    var nickname = document["nickname"] as String
+                    findViewById<TextView>(R.id.userNickname).text = nickname.toString()
+                }
+
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Chatting", "Error getting documents: $exception")
+            }
+
 
         if (currentStory.photo != "") {
             val resourceId = currentStory.photo
@@ -295,6 +328,22 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         counter++
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
         var currentStory: Story = StoryArr!![counter]
+
+        // 닉네임 가져오기
+        userInfo
+            .whereEqualTo("uid", "${currentStory.writer}") //uid가 destinationUid와 일치하는 문서 가져오기
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    var nickname = document["nickname"] as String
+                    findViewById<TextView>(R.id.userNickname).text = nickname.toString()
+                }
+
+            }
+            .addOnFailureListener { exception ->
+                Log.d("Chatting", "Error getting documents: $exception")
+            }
+
         if (currentStory.photo != "") {
             val resourceId = currentStory.photo
             if (resourceId != null) {
