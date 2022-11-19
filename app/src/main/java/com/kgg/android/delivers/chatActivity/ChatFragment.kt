@@ -86,9 +86,9 @@ class ChatFragment : Fragment() {
 //            myUid = Firebase.auth.currentUser?.uid.toString()
 
             //접속한 userid
-//            auth = FirebaseAuth.getInstance()
-//            myUid = auth.currentUser?.uid.toString()!!
-            myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
+            auth = FirebaseAuth.getInstance()
+            myUid = auth.currentUser?.uid.toString()!!
+//            myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
             Log.d("Chatting", myUid!!.toString())
 
             try {
