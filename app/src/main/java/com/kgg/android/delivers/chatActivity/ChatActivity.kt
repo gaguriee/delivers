@@ -101,14 +101,14 @@ class ChatActivity : AppCompatActivity() {
 
     fun initializeProperty(){ //변수 초기화
         auth = FirebaseAuth.getInstance()
-//        myUid = auth.currentUser?.uid.toString()!!
+        myUid = auth.currentUser?.uid.toString()!!
 //        fireDatabase = FirebaseDatabase.getInstance().reference!!
 
 //        chatRoom = (intent.getSerializableExtra("ChatRoom")) as ChatRoom //인텐트로부터 chatRoom 정보 넘겨받음
 //
 
         Log.d("Chatting", "this is chatActivity")
-        myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
+//        myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
        chatRoomUid = intent.getStringExtra("ChatRoomUid")!! //intent로부터 chatRoomUid넘겨받음
        destinationUid = intent.getStringExtra("destinationUid")!! //intent로부터 destinationUid 넘겨받음
        postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
@@ -187,7 +187,8 @@ class ChatActivity : AppCompatActivity() {
 
 
         fireDatabase.child("chatrooms")
-            .orderByChild("users/${destinationUid}").equalTo(true) //상대방 uid가 포함된 채팅 목록이 있는지 확인
+            .orderByChild("postId")
+            .equalTo(postId) //상대방 uid가 포함된 채팅 목록이 있는지 확인
             .addListenerForSingleValueEvent(object : ValueEventListener{
                 override fun onCancelled(error: DatabaseError) {
                    Log.d("Chatting","Fail to read data")
@@ -195,16 +196,19 @@ class ChatActivity : AppCompatActivity() {
 
                 override fun onDataChange(snapshot: DataSnapshot) {
                     for (data in snapshot.children) {
-//                        val chatRoom = data.getValue<ChatRoom>()
-                        chatRoomUid = data.key!! //chatRoomId 초기화
-//                        setupRecycler() //채팅 메시지 목록 업데이트
+                        val chatRoom = data.getValue<ChatRoom>()
+                        if (chatRoom != null) {
+                            if(chatRoom.users.getValue(destinationUid))
+                                chatRoomUid = data.key!!
+                        } //chatRoomId 초기화
+                        setupRecycler() //채팅 메시지 목록 업데이트
                         break
 
 
                     }
                 }
             })
-        setupRecycler()
+//        setupRecycler()
     }
 
     fun setupRecycler() { //채팅 메세지 목록 초기화 및 업데이트
@@ -226,8 +230,8 @@ class ChatActivity : AppCompatActivity() {
         private var messages = ArrayList<Message>()
         var messageKeys: ArrayList<String> = arrayListOf()
 
-//        val myUid = auth.currentUser?.uid.toString()!!
-        val myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
+        val myUid = auth.currentUser?.uid.toString()!!
+//        val myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
         val recyclerView = (context as ChatActivity).recyclerView
 
 

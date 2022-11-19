@@ -213,7 +213,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                                     var chatRoom = data.getValue<ChatRoom>()
                                     Log.d("Chatting","ChatRoom information: $chatRoom")
                                     if (chatRoom != null) {
-                                        if(chatRoom.users.getValue("WoKw1NJYG8TB9Z4GDWh4H5e9ieh1")){
+                                        if(chatRoom.users.getValue(uid)){
                                             var chatRoomUid = data.key!!
                                             intent.putExtra("ChatRoomUid", chatRoomUid)
                                             Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
