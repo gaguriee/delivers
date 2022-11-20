@@ -268,6 +268,9 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         if( uid == currentStory.writer){
             DMBtn.visibility = View. INVISIBLE
         }
+        else{
+            DMBtn.visibility = View.VISIBLE
+        }
 
 
     }
