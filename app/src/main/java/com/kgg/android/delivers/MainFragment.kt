@@ -228,8 +228,6 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
                     //    imgArr.add(document["Imgurl"] as String)
                     //   desArr.add(document["description"] as String)
-                    if(count==10)
-                        break
                 }
 
                 if (sAdapter != null) {
@@ -298,30 +296,7 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
         var gpsBtn = binding.currentGpsMain // 현재 위치 버튼
 
-//        // gps 버튼 눌렀을 때 현재 위치로 이동되도록
-//        gpsBtn.setOnClickListener{
-//
-//
-//            val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//            var userNowLocation: Location? = null
-//            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                //User has previously accepted this permission
-//                if (ActivityCompat.checkSelfPermission(requireContext(),
-//                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                    userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-//                }
-//            } else {
-//                //Not in api-23, no need to prompt
-//                userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-//            }
-//
-//
-//            //위도 , 경도
-//            var lat = userNowLocation?.latitude
-//            var long = userNowLocation?.longitude
-//
-//
-//        }
+
 
         main_map.getMapAsync(this)
 
