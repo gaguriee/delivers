@@ -47,6 +47,7 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.OverlayImage
+import java.text.SimpleDateFormat
 import kotlin.collections.ArrayList
 
 // 메인 페이지
@@ -178,6 +179,20 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         document["registerDate"] as String,
                         document["postId"] as String,
                     )
+
+                    // 24시간이 지난 post일 경우 삭제하기
+
+                    var currTime =  System.currentTimeMillis()
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
+                    var registerTime = dateFormat.parse(item.registerDate).time
+
+                    var diffTime: Long = (currTime - registerTime) / 1000
+                    if (diffTime >= 60*60*24) {
+                        doccol.document(item.postId.toString())
+                            .delete()
+                    }
+
+
                     var targetLocation = Location("")
                     targetLocation.latitude =item.latitude!!
                     targetLocation.longitude = item.longitude!!
