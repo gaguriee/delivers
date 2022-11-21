@@ -1,14 +1,16 @@
 package com.kgg.android.delivers.chatActivity
 
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
-import android.view.Menu
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.core.os.HandlerCompat.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -27,9 +29,9 @@ import com.kgg.android.delivers.databinding.ActivityChatBinding
 import com.kgg.android.delivers.databinding.ItemMineMessageBinding
 import com.kgg.android.delivers.databinding.ItemOtherMessageBinding
 import kotlinx.android.synthetic.main.activity_chat.*
+import kotlinx.android.synthetic.main.certification.*
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 
 class ChatActivity : AppCompatActivity() {
@@ -148,81 +150,104 @@ class ChatActivity : AppCompatActivity() {
         }
 
 
-
         btn_send.setOnClickListener { //send버튼을 눌렀을 때
-                Log.d("dest : ", "$destinationUid")
+            Log.d("Chatting", "sendDest : $destinationUid")
 
-                fireDatabase.child("chatrooms")
-                    .equalTo(chatRoomUid) //chatRoom 키가 같은 채팅방 데이터 불러오기
-                    .addListenerForSingleValueEvent(object : ValueEventListener{
-                        override fun onCancelled(error: DatabaseError) {
-                            Log.d("Chatting","Fail to read data")
-                        }
+            var sendState = true
 
-                        override fun onDataChange(snapshot: DataSnapshot) {
-                            for (data in snapshot.children) {
-                                val chatRoom = data.getValue<ChatRoom>()
-                                if (chatRoom != null) {
-                                    if(!chatRoom.users.getValue(destinationUid)) {
-                                        Log.d("Chatting", "상대방이 채팅방을 나감")
-                                        Toast.makeText(
-                                            this@ChatActivity,
-                                            "상대방이 채팅방을 나가 채팅을 보낼 수 없습니다.",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }else{
-                                        try{
+            fireDatabase.child("chatrooms")
+                .orderByChild("postId")
+                .equalTo(postId) //해당 포스트 아이디에 해당되는 채팅방 데이터 가져옴
+                .addListenerForSingleValueEvent(object : ValueEventListener{
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (data in snapshot.children) {
+                            val chatRoom = data.getValue<ChatRoom>()
+                            if (chatRoom != null) {
+                                if (!chatRoom.users.getValue(destinationUid)) {
+                                    Log.d("Chatting", "destinationUid false")
+                                    Toast.makeText(
+                                        this@ChatActivity,
+                                        "상대방이 채팅방을 나가 메세지를 보낼 수 없습니다.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
 
-
-                                            var message = Message(edt_message.text.toString(), myUid, getDateTimeString()) //메세지 정보 instance생성
-                                            message.senderUid?.let { it1 -> Log.d("Chatting", it1.toString()) }
-                                            message.time?.let{it -> Log.d("Chatting",it)}
-                                            message.message?.let{it -> Log.d("Chatting",it)}
-                                            Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
-
-                                            chatRoomUid?.let { it1 ->
-                                                fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
-                                                    .child(it1).child("messages")
-                                                    .push().setValue(message).addOnSuccessListener {
-                                                        Log.d("chatting", "메세지 전송에 성공하였습니다.")
-                                                        edt_message.text.clear()
-                                                    }.addOnCanceledListener {
-                                                        Log.d("chatting", "메세지 전송에 실패하였습니다.")
-                                                    }
-                                            }
-                                        }catch(e:Exception) {
-                                            e.printStackTrace()
-                                            Log.d("chatting", "메세지 전송 중 오류가 발생했습니다.")
-                                        }
-
-                                    }
+                                    sendState = false
                                 }
-
-
-
                             }
                         }
-                    })
+                    }
+                    override fun onCancelled(error: DatabaseError) {
+                        Log.d("Chatting","Fail to read data")
+                    }
+
+                })
+
+
+            Handler().postDelayed({
+                try {
+                    if(sendState){
+
+                        var message = Message(
+                            edt_message.text.toString(),
+                            myUid,
+                            getDateTimeString()
+                        ) //메세지 정보 instance생성
+                        message.senderUid?.let { it1 ->
+                            Log.d(
+                                "Chatting",
+                                it1.toString()
+                            )
+                        }
+                        message.time?.let { it -> Log.d("Chatting", it) }
+                        message.message?.let { it -> Log.d("Chatting", it) }
+                        Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
+
+                        chatRoomUid?.let { it1 ->
+                            fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
+                                .child(it1).child("messages")
+                                .push().setValue(message).addOnSuccessListener {
+                                    Log.d("chatting", "메세지 전송에 성공하였습니다.")
+                                    edt_message.text.clear()
+                                }.addOnCanceledListener {
+                                    Log.d("chatting", "메세지 전송에 실패하였습니다.")
+                                }
+                        }
+                    }
+                }catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.d("chatting", "메세지 전송 중 오류가 발생했습니다.")
+                    }
+            }, 1000L)
+
 
 
 
         }
 
         exit_button.setOnClickListener{
-            var childUpdates: HashMap<String, Boolean> =  HashMap()
-            childUpdates.put("chatrooms/$chatRoomUid/users/$myUid", false)
-            fireDatabase.updateChildren(childUpdates as Map<String, Any>)
 
-            var intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            AlertDialog.Builder(this)
+                .setTitle("채팅방 나가기")
+                .setMessage("나가기를 하면 대화내용이 모두 삭제되고, 해당 포스트에 대해 상대방과 채팅을 다시 할 수 없습니다. ")
+                .setPositiveButton("취소", DialogInterface.OnClickListener { dialog, which ->
+                })
+                .setNegativeButton("나가기", DialogInterface.OnClickListener { dialog, which ->
+                    var childUpdates: HashMap<String, Boolean> =  HashMap()
+                    childUpdates.put("chatrooms/$chatRoomUid/users/$myUid", false)
+                    fireDatabase.updateChildren(childUpdates as Map<String, Any>)
+                    Log.d("Chatting","Chatroom $chatRoomUid destroyed.")
 
-
-
+                    var intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                })
+                .show()
 
 
 
         }
     }
+
+
 
 
 
@@ -247,7 +272,7 @@ class ChatActivity : AppCompatActivity() {
     fun setupChatRoomId() {
        //chatRoomUid가 없을 경우 초기화 후 채팅 메세지 목록 초기화
         var chatRoom = ChatRoom(postId)
-        chatRoom.users.put(myUid.toString(),true)
+        chatRoom.users.put(myUid,true)
         chatRoom.users.put(destinationUid, true)
         Log.d("chatting", "$chatRoom")
 
