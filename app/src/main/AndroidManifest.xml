@@ -57,7 +57,8 @@
         </activity>
         <activity
             android:name=".chatActivity.ChatActivity"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".StoryActivity.storyviewActivity"
             android:exported="true" />

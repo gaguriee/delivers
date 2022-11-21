@@ -2,15 +2,13 @@ package com.kgg.android.delivers.chatActivity
 
 import android.content.Context
 import android.content.Intent
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
+import android.view.*
+import android.widget.*
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -22,11 +20,13 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.MainActivity
+import com.kgg.android.delivers.R
 import com.kgg.android.delivers.data.ChatRoom
 import com.kgg.android.delivers.data.Message
 import com.kgg.android.delivers.databinding.ActivityChatBinding
 import com.kgg.android.delivers.databinding.ItemMineMessageBinding
 import com.kgg.android.delivers.databinding.ItemOtherMessageBinding
+import kotlinx.android.synthetic.main.activity_chat.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -41,6 +41,7 @@ class ChatActivity : AppCompatActivity() {
 
     lateinit var btn_quit: ImageButton
     lateinit var btn_send: Button
+    lateinit var exit_button: Button
     lateinit var chat_title: TextView
     lateinit var edt_message: EditText
     lateinit var recyclerView: RecyclerView
@@ -56,9 +57,31 @@ class ChatActivity : AppCompatActivity() {
     private val fireStore = FirebaseFirestore.getInstance()
     private lateinit var auth: FirebaseAuth
 
+//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+//        binding.toolbar2.inflateMenu(R.menu.chat_menu)
+//        return true
+//    }
+//
+//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+//        return when (item.itemId) {
+//            R.id.exit_chat -> {
+//                fireDatabase.child(chatRoomUid).setValue(null)
+//                Log.d("Chatting","채팅방이 삭제되었습니다.")
+//                var intent = Intent(this, ChatActivity::class.java)
+//                startActivity(intent)
+//                true
+//            }
+//
+//        else -> super.onOptionsItemSelected(item)
+//        }
+//    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
+
+
         initializeProperty()
 
         btn_quit = binding.imgbtnQuit
@@ -66,6 +89,7 @@ class ChatActivity : AppCompatActivity() {
         recyclerView = binding.recyclerMessages
         btn_send = binding.btnSubmit
         chat_title = binding.txtTItle
+        exit_button = binding.exitButton
 
 
 
@@ -95,6 +119,7 @@ class ChatActivity : AppCompatActivity() {
             setupChatRoomId()
 
         } else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
+
             setupRecycler()
     }
 
@@ -122,31 +147,80 @@ class ChatActivity : AppCompatActivity() {
             startActivity(Intent(this@ChatActivity, MainActivity::class.java))
         }
 
+
+
         btn_send.setOnClickListener { //send버튼을 눌렀을 때
-            try {//메세지 전송
                 Log.d("dest : ", "$destinationUid")
 
-
-                var message = Message(edt_message.text.toString(), myUid, getDateTimeString()) //메세지 정보 instance생성
-                message.senderUid?.let { it1 -> Log.d("Chatting", it1.toString()) }
-                message.time?.let{it -> Log.d("Chatting",it)}
-                message.message?.let{it -> Log.d("Chatting",it)}
-                Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
-
-                chatRoomUid?.let { it1 ->
-                    fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
-                        .child(it1).child("messages")
-                        .push().setValue(message).addOnSuccessListener {
-                            Log.d("chatting", "메세지 전송에 성공하였습니다.")
-                            edt_message.text.clear()
-                        }.addOnCanceledListener {
-                            Log.d("chatting", "메세지 전송에 실패하였습니다.")
+                fireDatabase.child("chatrooms")
+                    .equalTo(chatRoomUid) //chatRoom 키가 같은 채팅방 데이터 불러오기
+                    .addListenerForSingleValueEvent(object : ValueEventListener{
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d("Chatting","Fail to read data")
                         }
-                }
-            }catch(e:Exception) {
-                e.printStackTrace()
-                Log.d("chatting", "메세지 전송 중 오류가 발생했습니다.")
-            }
+
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for (data in snapshot.children) {
+                                val chatRoom = data.getValue<ChatRoom>()
+                                if (chatRoom != null) {
+                                    if(!chatRoom.users.getValue(destinationUid)) {
+                                        Log.d("Chatting", "상대방이 채팅방을 나감")
+                                        Toast.makeText(
+                                            this@ChatActivity,
+                                            "상대방이 채팅방을 나가 채팅을 보낼 수 없습니다.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }else{
+                                        try{
+
+
+                                            var message = Message(edt_message.text.toString(), myUid, getDateTimeString()) //메세지 정보 instance생성
+                                            message.senderUid?.let { it1 -> Log.d("Chatting", it1.toString()) }
+                                            message.time?.let{it -> Log.d("Chatting",it)}
+                                            message.message?.let{it -> Log.d("Chatting",it)}
+                                            Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
+
+                                            chatRoomUid?.let { it1 ->
+                                                fireDatabase.child("chatrooms") //현재 채팅방에 메세지 추가
+                                                    .child(it1).child("messages")
+                                                    .push().setValue(message).addOnSuccessListener {
+                                                        Log.d("chatting", "메세지 전송에 성공하였습니다.")
+                                                        edt_message.text.clear()
+                                                    }.addOnCanceledListener {
+                                                        Log.d("chatting", "메세지 전송에 실패하였습니다.")
+                                                    }
+                                            }
+                                        }catch(e:Exception) {
+                                            e.printStackTrace()
+                                            Log.d("chatting", "메세지 전송 중 오류가 발생했습니다.")
+                                        }
+
+                                    }
+                                }
+
+
+
+                            }
+                        }
+                    })
+
+
+
+        }
+
+        exit_button.setOnClickListener{
+            var childUpdates: HashMap<String, Boolean> =  HashMap()
+            childUpdates.put("chatrooms/$chatRoomUid/users/$myUid", false)
+            fireDatabase.updateChildren(childUpdates as Map<String, Any>)
+
+            var intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+
+
+
+
+
+
         }
     }
 
@@ -200,6 +274,7 @@ class ChatActivity : AppCompatActivity() {
                         if (chatRoom != null) {
                             if(chatRoom.users.getValue(destinationUid))
                                 chatRoomUid = data.key!!
+
                         } //chatRoomId 초기화
                         setupRecycler() //채팅 메시지 목록 업데이트
                         break
@@ -364,4 +439,12 @@ class ChatActivity : AppCompatActivity() {
 
 
     }
+
+    override fun onBackPressed() { //뒤로가기 처리
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+
+    }
+
+
 }
