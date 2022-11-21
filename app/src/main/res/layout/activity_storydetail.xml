@@ -149,7 +149,7 @@ android:layout_height="match_parent">
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/DMBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -163,12 +163,13 @@ android:layout_height="match_parent">
                 android:id="@+id/textView18"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="4dp"
+                android:background="@drawable/start_button"
+                android:gravity="center_horizontal|center_vertical"
                 android:lineSpacingExtra="8sp"
                 android:text="@string/direct_message"
                 android:textColor="@color/white"
                 android:textSize="12dp" />
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
