@@ -166,7 +166,9 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
             msg = diffTime.toString() + "년 전"
         }
 
-        daysbefore.text = msg
+        findViewById<TextView>(R.id.daysbefore).text = msg
+
+
 
         // 닉네임 가져오기
         userInfo
@@ -176,6 +178,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                 for (document in result) {
                     var nickname = document["nickname"] as String
                     findViewById<TextView>(R.id.userNickname).text = nickname.toString()
+
+
                 }
 
             }
@@ -268,6 +272,9 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         if( uid == currentStory.writer){
             DMBtn.visibility = View. INVISIBLE
         }
+        else{
+            DMBtn.visibility = View.VISIBLE
+        }
 
 
     }
@@ -277,6 +284,39 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         counter--
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
         var currentStory: Story = StoryArr!![counter]
+
+        var currTime =  System.currentTimeMillis()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
+        var registerTime = dateFormat.parse(currentStory.registerDate).time
+
+        var diffTime: Long = (currTime - registerTime) / 1000
+        var SEC = 60
+        var MIN = 60
+        var HOUR = 24
+        var DAY = 30
+        var MONTH = 12
+
+        var msg: String? = null
+        if (diffTime < SEC) {
+            msg = "방금 전"
+        } else if ((diffTime / SEC) < MIN) {
+            diffTime /= SEC
+            msg = diffTime.toString() + "분 전"
+        } else if ((diffTime / (MIN*SEC)) < HOUR) {
+            diffTime /= (MIN*SEC)
+            msg = diffTime.toString() + "시간 전"
+        } else if ((diffTime / (MIN*SEC*HOUR)) < DAY) {
+            diffTime /= (MIN*SEC*HOUR)
+            msg = diffTime.toString() + "일 전"
+        } else if ((diffTime / (MIN*SEC*HOUR*DAY)) < MONTH) {
+            diffTime /= (MIN*SEC*HOUR*DAY)
+            msg = diffTime.toString() + "달 전"
+        } else {
+            diffTime /= (MIN*SEC*HOUR*DAY*MONTH)
+            msg = diffTime.toString() + "년 전"
+        }
+
+        findViewById<TextView>(R.id.daysbefore).text = msg
 
         // 닉네임 가져오기
         userInfo
@@ -328,6 +368,40 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         counter++
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
         var currentStory: Story = StoryArr!![counter]
+
+
+        var currTime =  System.currentTimeMillis()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
+        var registerTime = dateFormat.parse(currentStory.registerDate).time
+
+        var diffTime: Long = (currTime - registerTime) / 1000
+        var SEC = 60
+        var MIN = 60
+        var HOUR = 24
+        var DAY = 30
+        var MONTH = 12
+
+        var msg: String? = null
+        if (diffTime < SEC) {
+            msg = "방금 전"
+        } else if ((diffTime / SEC) < MIN) {
+            diffTime /= SEC
+            msg = diffTime.toString() + "분 전"
+        } else if ((diffTime / (MIN*SEC)) < HOUR) {
+            diffTime /= (MIN*SEC)
+            msg = diffTime.toString() + "시간 전"
+        } else if ((diffTime / (MIN*SEC*HOUR)) < DAY) {
+            diffTime /= (MIN*SEC*HOUR)
+            msg = diffTime.toString() + "일 전"
+        } else if ((diffTime / (MIN*SEC*HOUR*DAY)) < MONTH) {
+            diffTime /= (MIN*SEC*HOUR*DAY)
+            msg = diffTime.toString() + "달 전"
+        } else {
+            diffTime /= (MIN*SEC*HOUR*DAY*MONTH)
+            msg = diffTime.toString() + "년 전"
+        }
+
+        findViewById<TextView>(R.id.daysbefore).text = msg
 
         // 닉네임 가져오기
         userInfo
