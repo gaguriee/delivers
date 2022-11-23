@@ -116,12 +116,12 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                             .into(image!!)
 
                     } else {
-                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                        image!!.setImageResource(R.drawable.gray_bg)
                     }
                 }
             }
         } else {
-            image!!.setImageResource(R.mipmap.ic_launcher_round)
+            image!!.setImageResource(R.drawable.gray_bg)
         }
         var description = findViewById<TextView>(R.id.description)
         var title = currentStory.description
@@ -343,12 +343,12 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                             .load(task.result)
                             .into(image!!)
                     } else {
-                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                        image!!.setImageResource(R.drawable.gray_bg)
                     }
                 }
             }
         } else {
-            image!!.setImageResource(R.mipmap.ic_launcher_round)
+            image!!.setImageResource(R.drawable.gray_bg)
         }
         var description = findViewById<TextView>(R.id.description)
         var title = currentStory.description
@@ -427,12 +427,12 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                             .load(task.result)
                             .into(image!!)
                     } else {
-                        image!!.setImageResource(R.mipmap.ic_launcher_round)
+                        image!!.setImageResource(R.drawable.gray_bg)
                     }
                 }
             }
         } else {
-            image!!.setImageResource(R.mipmap.ic_launcher_round)
+            image!!.setImageResource(R.drawable.gray_bg)
         }
 
 

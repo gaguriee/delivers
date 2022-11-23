@@ -58,7 +58,7 @@ class MyStoryActivity : AppCompatActivity() {
 
         uid = auth.currentUser?.uid.toString()
 
-        val sAdapter = MainFragment.StoriesAdapter(storyList, this)
+        val sAdapter = StoriesAdapter(storyList, this)
         binding.myRecyclerView.adapter = sAdapter
 
 
@@ -105,7 +105,7 @@ class MyStoryActivity : AppCompatActivity() {
             }
 
         if (sAdapter != null) {
-            sAdapter.setOnItemClickListener(object : MainFragment.StoriesAdapter.OnItemClickListener {
+            sAdapter.setOnItemClickListener(object : StoriesAdapter.OnItemClickListener {
                 override fun onItemClick(v: View, data: Story, pos: Int) {
 
                     val intent = Intent(this@MyStoryActivity, storyviewActivity::class.java)

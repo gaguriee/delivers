@@ -131,7 +131,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/email"
-        app:srcCompat="@drawable/start_button" />
+        app:srcCompat="@drawable/blue_btn" />
 
     <TextView
         android:id="@+id/textView5"

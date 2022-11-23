@@ -13,16 +13,18 @@
         android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <net.daum.mf.map.api.MapView
             android:id="@+id/map_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </RelativeLayout>
 
     <ImageButton
         android:id="@+id/current_gps"
         android:layout_width="55dp"
         android:layout_height="55dp"
+        android:layout_marginBottom="60dp"
         android:background="@android:color/transparent"
         android:scaleType="fitCenter"
         android:src="@drawable/mylocation"
@@ -35,7 +37,7 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="413dp"
-        android:layout_height="87dp"
+        android:layout_height="100dp"
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -53,7 +55,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.39"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textCate"
             app:layout_constraintVertical_bias="0.861">
 
             <androidx.recyclerview.widget.RecyclerView
@@ -62,54 +64,105 @@
                 android:layout_height="wrap_content" />
         </androidx.core.widget.NestedScrollView>
 
+        <ImageView
+            android:id="@+id/imageView9"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:src="@drawable/ic_check_"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <TextView
             android:id="@+id/textCate"
             android:layout_width="95dp"
-            android:layout_height="26dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
             android:text="음식 카테고리"
-            app:layout_constraintBottom_toBottomOf="@+id/foodScrollView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.09"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.1" />
+            android:textSize="16dp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/imageView9"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="160dp"
         android:background="@color/white"
         app:layout_constraintBottom_toBottomOf="@+id/mapView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageButton
-            android:id="@+id/uploadComp"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:scaleType="fitCenter"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@+id/uploadDirect"
+            app:layout_constraintEnd_toEndOf="@+id/uploadDirect">
+
+            <TextView
+                android:id="@+id/uploadComp_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="4dp"
+                android:text="사진 업로드하기" />
+
+            <ImageButton
+                android:id="@+id/uploadComp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="upload"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_menu_upload" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/uploadDirect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:src="@drawable/uploadbutton"
+            android:contentDescription="upload"
+            android:scaleType="fitCenter"
+            android:src="@drawable/blue_btn"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:contentDescription="upload"
             app:layout_constraintVertical_bias="0.885" />
 
         <TextView
             android:id="@+id/addressText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="위치를 선택해주세요."
-            app:layout_constraintBottom_toTopOf="@+id/uploadComp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.045"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.444" />
+            app:layout_constraintStart_toStartOf="@+id/uploadDirect"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnText3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="이 위치로 등록하기"
+            android:textColor="@color/white"
+            android:textSize="16dp"
+            android:textStyle="normal"
+            app:layout_constraintBottom_toBottomOf="@+id/uploadDirect"
+            app:layout_constraintEnd_toEndOf="@+id/uploadDirect"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="@+id/uploadDirect"
+            app:layout_constraintTop_toTopOf="@+id/uploadDirect"
+            app:layout_constraintVertical_bias="0.45" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 

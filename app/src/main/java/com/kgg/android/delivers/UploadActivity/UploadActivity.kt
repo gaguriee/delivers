@@ -5,12 +5,11 @@ import android.content.ContentValues.TAG
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
@@ -18,13 +17,11 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.MainActivity
-import com.kgg.android.delivers.R
 import com.kgg.android.delivers.data.Story
-import com.kgg.android.delivers.loginActivity.userinfoActivity
 import kotlinx.android.synthetic.main.activity_fast_create.*
-import kotlinx.android.synthetic.main.certification.*
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 // 가경
 // 스토리 사진 및 설명 최종 등록 페이지
@@ -37,26 +34,29 @@ class UploadActivity: AppCompatActivity() {
     var longitude = 0.0
     var Location = ""
     var category = ""
-
+    var bool = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_fast_create)
+        setContentView(com.kgg.android.delivers.R.layout.activity_fast_create)
 
         auth = FirebaseAuth.getInstance()
 
+        imgUri = "drawable://ic_launcher_background.png".toUri()
 
         latitude = intent.getStringExtra("latitude")?.toDouble()!!
         longitude = intent.getStringExtra("longitude")?.toDouble()!!
         category = intent.getStringExtra("category")!!
         Location = intent.getStringExtra("location")!!
+        bool = intent.getBooleanExtra("bool", true)
 
-        val intent = Intent(Intent.ACTION_PICK)
-        intent.type = "image/*"
-        startActivityForResult(intent, 10)
-        imageAttach.scaleType = ImageView.ScaleType.CENTER_CROP
-
+        if(bool){
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent, 10)
+            imageAttach.scaleType = ImageView.ScaleType.CENTER_CROP
+        }
 
 
         val closeBtn = imageView
@@ -79,6 +79,7 @@ class UploadActivity: AppCompatActivity() {
 
     }
 
+
     override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?){
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -88,9 +89,13 @@ class UploadActivity: AppCompatActivity() {
                     imgUri = data?.data!!
                     Glide.with(this).load(imgUri).into(imageAttach)
                 }
+            else {
+                    finish() // 사진 선택이 안된 채로 뒤로 가기가 눌렸을 경우 액티비티 종t
+                }
 
         }
     }
+
 
 
     private fun createFastLost() {
