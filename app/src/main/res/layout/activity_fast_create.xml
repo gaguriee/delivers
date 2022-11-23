@@ -18,18 +18,19 @@
             android:id="@+id/imageAttach"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:background="#CE000000"
             android:scaleType="centerCrop"
             app:flow_horizontalAlign="center"
             app:flow_verticalAlign="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#12000000"
+            android:background="#28000000"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -81,7 +82,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:srcCompat="@drawable/start_button" />
+            app:srcCompat="@drawable/blue_btn" />
 
         <TextView
             android:id="@+id/btnText"

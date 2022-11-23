@@ -258,13 +258,72 @@ class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEv
 
         }
 
+        var bool = true
 
 
-        // 등록 버튼
+        // 사진 등록 버튼
         binding.uploadComp.setOnClickListener{
             // 좌표 담을 변수
             // marker.mapPoint.mapPointGeoCoord : 마커의 좌표값
             // 이거 쓰면 됨, latitude랑 longitude가 안되면, marker.mapPoint.mapPointGeoCoord 이거 그대로 가져다 쓰면 됩니당.
+
+            bool = true
+            var markers2 = mapview.poiItems.iterator()
+            while(markers2.hasNext()) {
+                var marker: MapPOIItem = markers2.next() as MapPOIItem
+                // marker.mapPoint = p0!!.mapCenterPoint
+                latitude = marker.mapPoint.mapPointGeoCoord.latitude
+                longitude = marker.mapPoint.mapPointGeoCoord.longitude
+            }
+
+            if(fAdapter.selectPos!=-1){ // 카테고리 설정하면,
+                latitude = marker.mapPoint.mapPointGeoCoord.latitude
+                longitude = marker.mapPoint.mapPointGeoCoord.longitude
+                category_name = categoryList[fAdapter.selectPos].title
+
+                // 주소로 변환해주는 코드
+                try {
+                    mResultList = mGeocoder.getFromLocation(
+                        latitude!!.toDouble(), longitude!!.toDouble(), 1
+                    )
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                if (mResultList != null) {
+                    Log.d("CheckCurrentLocation", mResultList!![0].getAddressLine(0))
+                    currentLocation = mResultList!![0].getAddressLine(0)
+                }
+                binding.addressText.text = currentLocation
+
+
+                //category_name
+//                Toast.makeText(requireContext(),"${latitude} ${longitude} ${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
+                val intent = Intent(requireContext(), UploadActivity::class.java)
+                intent.putExtra("latitude", latitude.toString())
+                intent.putExtra("longitude", longitude.toString())
+                intent.putExtra("category", category_name)
+                intent.putExtra("location", currentLocation)
+                intent.putExtra("bool", bool)
+
+                startActivity(intent)
+
+            }else{ // 카테고리 미선택 시,
+                Toast.makeText(requireContext()," 카테고리를 설정해주세요.",Toast.LENGTH_SHORT).show()
+            }
+
+
+
+        }
+
+
+        // 사진 없이 등록 버튼
+        binding.uploadDirect.setOnClickListener{
+            // 좌표 담을 변수
+            // marker.mapPoint.mapPointGeoCoord : 마커의 좌표값
+            // 이거 쓰면 됨, latitude랑 longitude가 안되면, marker.mapPoint.mapPointGeoCoord 이거 그대로 가져다 쓰면 됩니당.
+
+            bool = false
 
             var markers2 = mapview.poiItems.iterator()
             while(markers2.hasNext()) {
@@ -296,12 +355,15 @@ class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEv
 
 
                 //category_name
-                Toast.makeText(requireContext(),"${latitude} ${longitude} ${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
+//                Toast.makeText(requireContext(),"${latitude} ${longitude} ${category_name} ${currentLocation}",Toast.LENGTH_SHORT).show()
                 val intent = Intent(requireContext(), UploadActivity::class.java)
                 intent.putExtra("latitude", latitude.toString())
                 intent.putExtra("longitude", longitude.toString())
                 intent.putExtra("category", category_name)
                 intent.putExtra("location", currentLocation)
+                intent.putExtra("bool", bool)
+                intent.putExtra("bool", bool)
+
 
                 startActivity(intent)
 
@@ -312,8 +374,6 @@ class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEv
 
 
         }
-
-
 
 
 

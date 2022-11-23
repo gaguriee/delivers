@@ -54,7 +54,7 @@ import kotlin.collections.ArrayList
 // 가경 - 스토리 리스트 조회 -> 스토리 디테일
 // 보영 - 지도 조회 (Naver Map API)
 
-class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
+class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
     private lateinit var auth: FirebaseAuth
     var uid = ""
@@ -623,11 +623,11 @@ class MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                                 .load(task.result)
                                 .into(lostPhoto)
                         } else {
-                            lostPhoto.setImageResource(R.mipmap.ic_launcher_round)
+                            lostPhoto.setImageResource(R.drawable.gray_bg)
                         }
                     }
                 } else {
-                    lostPhoto.setImageResource(R.mipmap.ic_launcher_round)
+                    lostPhoto.setImageResource(R.drawable.gray_bg)
                 }
 
 
