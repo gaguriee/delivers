@@ -646,6 +646,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                     val resourceId = storyD.photo
                     storageRef.child(resourceId!!).downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
+                            Icon.setImageResource(check_category(storyD.category.toString()))
                             Glide.with(context)
                                 .load(task.result)
                                 .into(Photo)

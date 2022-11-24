@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/storyOutline"
-        app:srcCompat="@drawable/candy" />
+        android:src="@drawable/candy" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/storyOutline"
