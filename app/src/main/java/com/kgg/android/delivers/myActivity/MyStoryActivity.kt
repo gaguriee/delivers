@@ -1,8 +1,7 @@
-package com.kgg.android.delivers
+package com.kgg.android.delivers.myActivity
 
 import android.content.Context
 import android.content.Intent
-import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.annotation.RequiresApi
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -21,12 +19,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.R
 import com.kgg.android.delivers.StoryActivity.storyviewActivity
 import com.kgg.android.delivers.data.Story
 import com.kgg.android.delivers.databinding.ActivityMyStoryBinding
-import com.naver.maps.geometry.LatLng
-import com.naver.maps.map.overlay.Marker
-import com.naver.maps.map.overlay.OverlayImage
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MyStoryActivity : AppCompatActivity() {
@@ -146,49 +142,58 @@ class MyStoryActivity : AppCompatActivity() {
 
         inner class StoriesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+
+            open fun check_category(category:String):Int{
+                var id = 0
+                when(category)
+                {
+                    "chicken" -> id = R.drawable.chicken //치킨
+                    "hamburger"-> id = R.drawable.hamburger //버거
+                    "pizza" -> id = R.drawable.pizza //피자
+                    "coffee"->id = R.drawable.coffee //카페디저트
+                    "bread"-> id = R.drawable.bread //샌드위치
+                    "meat"-> id = R.drawable.meat //고기
+                    "salad"-> id = R.drawable.salad //샐러드
+                    "sushi"-> id = R.drawable.sushi //회초밥
+                    "guitar"-> id = R.drawable.guitar //기타
+                }
+                return id
+            }
+
+
             private val lostPhoto = itemView.findViewById<ImageView>(R.id.story_imgSM)
 //            private var storyTitle = itemView.findViewById<TextView>(R.id.story_Title)
 //            private var ndaysbefore = itemView.findViewById<TextView>(R.id.ndays_before)
 //            private var category = itemView.findViewById<TextView>(R.id.cate_gory)
 
-            fun bind(lostD: Story, context: Context) {
+            fun bind(storyD: Story, context: Context) {
 
                 val pos = adapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     itemView.setOnClickListener {
-                        listener?.onItemClick(itemView, lostD, pos)
+                        listener?.onItemClick(itemView, storyD, pos)
                     }
                 }
 
-                val url = lostD.photo
-//                storyTitle.text = lostD.title
-//                if(lostD.title?.length!! >=15)
-//                    storyTitle.text = lostD.title?.substring(0 until 14)+"..."
-//                else
-//                    storyTitle.text = lostD.title
-////                ndaysbefore.text = lostD.registerDate
-//                category.text = lostD.category
 
-
-                if (lostD.photo != "") {
-                    val resourceId = lostD.photo
+                if (storyD.photo != "") {
+                    val resourceId = storyD.photo
                     storageRef.child(resourceId!!).downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Glide.with(context)
                                 .load(task.result)
                                 .into(lostPhoto)
                         } else {
-                            lostPhoto.setImageResource(R.mipmap.ic_launcher_round)
+                            lostPhoto.setImageResource(check_category(storyD.category.toString()))
                         }
                     }
                 } else {
-                    lostPhoto.setImageResource(R.mipmap.ic_launcher_round)
+                    lostPhoto.setImageResource(check_category(storyD.category.toString()))
                 }
 
 
             }
 
-            var storyOutline: CardView? = null
 
             init {
                 itemView.findViewById<View>(R.id.storyOutline)

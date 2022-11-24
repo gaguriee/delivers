@@ -20,14 +20,14 @@
         android:theme="@style/Theme.Delivers"
         tools:targetApi="31">
         <activity
-            android:name=".MyStoryActivity"
+            android:name=".myActivity.MyStoryActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
         <activity
-            android:name=".MyInfoActivity"
+            android:name=".myActivity.MyInfoActivity"
             android:exported="false">
             <meta-data
                 android:name="android.app.lib_name"
