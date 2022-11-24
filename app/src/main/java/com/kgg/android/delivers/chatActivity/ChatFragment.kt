@@ -83,12 +83,10 @@ class ChatFragment : Fragment() {
 
 
         init {
-//            myUid = Firebase.auth.currentUser?.uid.toString()
 
             //접속한 userid
             auth = FirebaseAuth.getInstance()
             myUid = auth.currentUser?.uid.toString()!!
-//            myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
             Log.d("Chatting", myUid!!.toString())
 
             try {
@@ -181,7 +179,21 @@ class ChatFragment : Fragment() {
                                         .into(holder.imageView!!)
 
                                 } else {
-                                    holder.imageView!!.setImageResource(R.mipmap.ic_launcher_round)
+                                    var category = document["category"] as String
+                                    var id = 0
+                                    when(category)
+                                    {
+                                        "chicken" -> id =R.drawable.chicken //치킨
+                                        "hamburger"-> id =R.drawable.hamburger //버거
+                                        "pizza" -> id =R.drawable.pizza //피자
+                                        "coffee"->id =R.drawable.coffee //카페디저트
+                                        "bread"-> id =R.drawable.bread //샌드위치
+                                        "meat"-> id =R.drawable.meat //고기
+                                        "salad"-> id =R.drawable.salad //샐러드
+                                        "sushi"-> id =R.drawable.sushi //회초밥
+                                        "guitar"-> id =R.drawable.guitar //기타
+                                    }
+                                    holder.imageView!!.setImageResource(id)
                                 }
                             }
                         }
@@ -209,8 +221,8 @@ class ChatFragment : Fragment() {
                     intent.putExtra("destinationUid", destinationUsers[position]) //상대방의 id를 넘겨줌
                     Log.d("Chatting","destinationUid: ${destinationUsers[position]}")
 //                    intent.putExtra("ChatRoom", chatRooms[position]) //채팅방 정보 넘겨줌
-                    intent.putExtra("ChatRoomUid", chatRoomKeys[position]) //채팅방 키 정보 넘겨줌
-                    Log.d("Chatting","ChatRoomUid: ${chatRoomKeys[position]}")
+                    intent.putExtra("ChatRoomId", chatRoomKeys[position]) //채팅방 키 정보 넘겨줌
+                    Log.d("Chatting","ChatRoomId: ${chatRoomKeys[position]}")
                     intent.putExtra("postId", chatRooms[position].postId) //채팅방 포스트 id넘겨줌
 
                     context?.startActivity(intent)
