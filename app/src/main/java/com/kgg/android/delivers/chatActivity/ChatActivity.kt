@@ -139,16 +139,32 @@ class ChatActivity : AppCompatActivity() {
                         for (data in snapshot.children) {
                             val chatRoom = data.getValue<ChatRoom>()
                             if (chatRoom != null) {
-                                if (!chatRoom.users.getValue(destinationUid)) {
-                                    Log.d("Chatting", "destinationUid false")
-                                    Toast.makeText(
-                                        this@ChatActivity,
-                                        "상대방이 채팅방을 나가 메세지를 보낼 수 없습니다.",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
+                                if(myUid in chatRoom.users.keys){
+                                    if (!chatRoom.users.getValue(destinationUid)) {
+                                        Log.d("Chatting", "destinationUid false")
+                                        Toast.makeText(
+                                            this@ChatActivity,
+                                            "상대방이 채팅방을 나가 메세지를 보낼 수 없습니다.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
 
-                                    sendState = false
+                                        sendState = false
+                                        break
+                                    }
+
+                                    if(!chatRoom.users.getValue(myUid)){
+                                        Log.d("Chatting", "destinationUid false")
+                                        Toast.makeText(
+                                            this@ChatActivity,
+                                            "이미 나간 채팅방입니다.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+
+                                        sendState = false
+                                        break
+                                    }
                                 }
+
                             }
                         }
                     }
@@ -269,18 +285,28 @@ class ChatActivity : AppCompatActivity() {
                 }
 
                 override fun onDataChange(snapshot: DataSnapshot) {
+                    Log.d("스냅샷","${snapshot.getChildrenCount()}")
+                    var chk_state = false
+                    var tmp_id = ""
                     for (data in snapshot.children) {
                         val chatRoom = data.getValue<ChatRoom>()
                         if (chatRoom != null) {
-                            if(chatRoom.users.getValue(destinationUid)) //상대방 id와 같은 채팅방을 찾아 그 데이터의 chatRoomId로 저장
-                                chatRoomId = data.key!!
+                            if(chatRoom.users.getValue(destinationUid)&&(myUid in chatRoom.users.keys)) //상대방 id와 같은 채팅방을 찾아 그 데이터의 chatRoomId로 저장
+                            {
+                                if(chatRoom.users.getValue(myUid)){
+                                    chatRoomId = data.key!!
+                                    setupRecycler()
+                                    break
+                                }
+
+                            }
 
                         } //chatRoomId 초기화
-                        setupRecycler() //채팅 메시지 목록 업데이트
-                        break
+
 
 
                     }
+
                 }
             })
 //        setupRecycler()
