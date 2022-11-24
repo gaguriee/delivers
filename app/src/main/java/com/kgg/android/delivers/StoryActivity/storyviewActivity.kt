@@ -236,14 +236,14 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                                     Log.d("Chatting","ChatRoom information: $chatRoom")
                                     if (chatRoom != null) {
                                         if(chatRoom.users.getValue(uid)){
-                                            var chatRoomUid = data.key!!
-                                            intent.putExtra("ChatRoomUid", chatRoomUid)
-                                            Log.d("Chatting", "ChatRoomUid : $chatRoomUid")
+                                            var chatRoomId = data.key!!
+                                            intent.putExtra("ChatRoomId", chatRoomId)
+                                            Log.d("Chatting", "ChatRoomId : $chatRoomId")
 
                                             startActivity(intent)
                                         }
                                         else {
-                                            intent.putExtra("ChatRoomUid","")
+                                            intent.putExtra("ChatRoomId","")
                                             startActivity(intent)
                                         }
 
@@ -252,7 +252,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                                     break
                                 }
                             }else{
-                                    intent.putExtra("ChatRoomUid","")
+                                    intent.putExtra("ChatRoomId","")
                                     startActivity(intent)
                                 }
                         }
