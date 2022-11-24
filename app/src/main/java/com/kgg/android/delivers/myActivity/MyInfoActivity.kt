@@ -1,4 +1,4 @@
-package com.kgg.android.delivers
+package com.kgg.android.delivers.myActivity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,8 +9,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.kgg.android.delivers.MyInfoActivity
-import com.kgg.android.delivers.data.Story
+import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.databinding.ActivityMyInfoBinding
 import kotlinx.android.synthetic.main.activity_main.*
 

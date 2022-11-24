@@ -1,4 +1,4 @@
-package com.kgg.android.delivers
+package com.kgg.android.delivers.myActivity
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,18 +7,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.kgg.android.delivers.UploadActivity.UploadActivity
-import com.kgg.android.delivers.data.ChatRoom
 import com.kgg.android.delivers.databinding.FragmentMyPageBinding
 
 
