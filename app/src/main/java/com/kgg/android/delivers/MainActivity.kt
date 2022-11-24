@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.kgg.android.delivers.UploadActivity.UploadFragment
 import kotlinx.android.synthetic.main.activity_main.*
 import com.kgg.android.delivers.chatActivity.ChatFragment
+import com.kgg.android.delivers.myActivity.MyPageFragment
 
 
 // 가경, 보영, 은지

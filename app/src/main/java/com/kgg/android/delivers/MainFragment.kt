@@ -98,12 +98,6 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
         }
 
-//        val pref = getSharedPreferences("isFirst", AppCompatActivity.MODE_PRIVATE)
-//        val editor = pref.edit()
-//        editor.putString("isFirst", "end")
-//        editor.commit()
-
-
     }
 
 
@@ -179,6 +173,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         document["longitude"] as Double,
                         document["registerDate"] as String,
                         document["postId"] as String,
+                        document["bool"] as Boolean
                     )
 
                     // 24시간이 지난 post일 경우 삭제하기
@@ -190,7 +185,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                     var diffTime: Long = (currTime - registerTime) / 1000
                     if (diffTime >= 60*60*24) {
                         doccol.document(item.postId.toString())
-                            .delete()
+                            .update("bool", false)
                     }
 
 
@@ -204,42 +199,45 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                     Log.d("distance",distance.toString())
 
 
-                    if (count==0) {
-                        storyList.add(item)
-                        count++
-                        continue
-                    }
-                    var longt = storyList[count-1].longitude
-                    var ltit = storyList[count-1].latitude
-                    var docLoc = Location("")
-                    docLoc.longitude = longt!!
-                    docLoc.latitude = ltit!!
-                    var dt = myLocation.distanceTo(docLoc)
-                    if(distance>=dt){
-                        storyList.add(item)
-                        count++
-                    }
-                    else{
-                        for(i in 0 until count){
-                            var longt = storyList[i].longitude
-                            var ltit = storyList[i].latitude
-                            var docLoc = Location("")
-                            docLoc.longitude = longt!!
-                            docLoc.latitude = ltit!!
-                            var dt = myLocation.distanceTo(docLoc)
-                            if(distance<dt){
-                                storyList.add(Story("","","","","",0.0,0.0 , "", "" ))
-
-                                for(c in count downTo i+1){
-                                    storyList[c]=storyList[c-1]
-                                }
-                                storyList[i]=item
-                                count++
-                                break
-                            }
+                    if(item.bool == true){
+                        if (count==0 ) {
+                            storyList.add(item)
+                            count++
+                            continue
                         }
+                        var longt = storyList[count-1].longitude
+                        var ltit = storyList[count-1].latitude
+                        var docLoc = Location("")
+                        docLoc.longitude = longt!!
+                        docLoc.latitude = ltit!!
+                        var dt = myLocation.distanceTo(docLoc)
+                        if(distance>=dt){
+                            storyList.add(item)
+                            count++
+                        }
+                        else{
+                            for(i in 0 until count){
+                                var longt = storyList[i].longitude
+                                var ltit = storyList[i].latitude
+                                var docLoc = Location("")
+                                docLoc.longitude = longt!!
+                                docLoc.latitude = ltit!!
+                                var dt = myLocation.distanceTo(docLoc)
+                                if(distance<dt){
+                                    storyList.add(Story("","","","","",0.0,0.0 , "", "" ))
 
+                                    for(c in count downTo i+1){
+                                        storyList[c]=storyList[c-1]
+                                    }
+                                    storyList[i]=item
+                                    count++
+                                    break
+                                }
+                            }
+
+                        }
                     }
+
 
 
                     //    imgArr.add(document["Imgurl"] as String)
@@ -271,17 +269,21 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         document["longitude"] as Double,
                         document["registerDate"] as String,
                         document["postId"] as String,
+                        document["bool"] as Boolean
                     )
 
-                    var bitmap = createUserBitmap(check_category(document["category"] as String))
+                    if(item.bool == true){
+                        var bitmap = createUserBitmap(check_category(document["category"] as String))
 
-                    var marker = Marker()
-                    marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
-                    marker.icon = OverlayImage.fromBitmap(bitmap)
-                    // marker.tag = document["postId"] as String
-                    marker.tag = document["postId"] as String
-                    marker.onClickListener = this
-                    markerArr.add(marker)
+                        var marker = Marker()
+                        marker.position = LatLng(document["latitude"] as Double, document["longitude"] as Double)
+                        marker.icon = OverlayImage.fromBitmap(bitmap)
+                        // marker.tag = document["postId"] as String
+                        marker.tag = document["postId"] as String
+                        marker.onClickListener = this
+                        markerArr.add(marker)
+                    }
+
                 }
 
                 main_map.getMapAsync(this)
@@ -409,13 +411,15 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         document["longitude"] as Double,
                         document["registerDate"] as String,
                         document["postId"] as String,
+                        document["bool"] as Boolean
                     )
-                    storyList.add(item)
-                    Log.d("storyViewActivity_only","Error3 getting documents:")
-                    intent.putParcelableArrayListExtra("StoryArr", storyList)
-                    context?.startActivity(intent)
+                    if(item.bool == true)
+                        storyList.add(item)
+                        Log.d("storyViewActivity_only","Error3 getting documents:")
+                        intent.putParcelableArrayListExtra("StoryArr", storyList)
+                        context?.startActivity(intent)
 
-                    Log.d("storyViewActivity_only"," no Error getting documents:")
+                        Log.d("storyViewActivity_only"," no Error getting documents:")
                 }.addOnFailureListener { exception ->
                     Log.d("storyViewActivity_only","Error getting documents: $exception")
                 }
@@ -491,19 +495,19 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
     }
 
 
-    fun check_category(category:String):Int{
+    open fun check_category(category:String):Int{
         var id = 0
         when(category)
         {
             "chicken" -> id =R.drawable.chicken //치킨
-            "hamburger"-> id =R.drawable.hamburger //버거
-            "pizza" -> id =R.drawable.pizza //피자
+            "hamburger"-> id = R.drawable.hamburger //버거
+            "pizza" -> id = R.drawable.pizza //피자
             "coffee"->id =R.drawable.coffee //카페디저트
             "bread"-> id =R.drawable.bread //샌드위치
-            "meat"-> id =R.drawable.meat //고기
+            "meat"-> id = R.drawable.meat //고기
             "salad"-> id =R.drawable.salad //샐러드
             "sushi"-> id =R.drawable.sushi //회초밥
-            "guitar"-> id =R.drawable.guitar //기타
+            "guitar"-> id =R.drawable.guitar //기타ㄲ
         }
         return id
     }
@@ -588,6 +592,25 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
     class StoriesAdapter(private val stories: List<Story>, context: Context) :
         RecyclerView.Adapter<StoriesAdapter.StoriesViewHolder>() {
+
+        open fun check_category(category:String):Int{
+            var id = 0
+            when(category)
+            {
+                "chicken" -> id =R.drawable.chicken //치킨
+                "hamburger"-> id = R.drawable.hamburger //버거
+                "pizza" -> id = R.drawable.pizza //피자
+                "coffee"->id =R.drawable.coffee //카페디저트
+                "bread"-> id =R.drawable.bread //샌드위치
+                "meat"-> id = R.drawable.meat //고기
+                "salad"-> id =R.drawable.salad //샐러드
+                "sushi"-> id =R.drawable.sushi //회초밥
+                "guitar"-> id =R.drawable.guitar //기타
+            }
+            return id
+        }
+
+
         private val storage: FirebaseStorage =
             FirebaseStorage.getInstance("gs://delivers-65049.appspot.com/")
         private val storageRef: StorageReference = storage.reference
@@ -606,49 +629,40 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
         inner class StoriesViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-            private val lostPhoto = itemView.findViewById<ImageView>(R.id.story_imgSM)
-//            private var storyTitle = itemView.findViewById<TextView>(R.id.story_Title)
-//            private var ndaysbefore = itemView.findViewById<TextView>(R.id.ndays_before)
-//            private var category = itemView.findViewById<TextView>(R.id.cate_gory)
+            private val Photo = itemView.findViewById<ImageView>(R.id.story_imgSM)
+            private val Icon = itemView.findViewById<ImageView>(R.id.storyIcon)
 
-            fun bind(lostD: Story, context: Context) {
+            fun bind(storyD: Story, context: Context) {
 
                 val pos = adapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
                     itemView.setOnClickListener {
-                        listener?.onItemClick(itemView, lostD, pos)
+                        listener?.onItemClick(itemView, storyD, pos)
                     }
                 }
 
-                val url = lostD.photo
-//                storyTitle.text = lostD.title
-//                if(lostD.title?.length!! >=15)
-//                    storyTitle.text = lostD.title?.substring(0 until 14)+"..."
-//                else
-//                    storyTitle.text = lostD.title
-////                ndaysbefore.text = lostD.registerDate
-//                category.text = lostD.category
 
-
-                if (lostD.photo != "") {
-                    val resourceId = lostD.photo
+                if (storyD.photo != "") {
+                    val resourceId = storyD.photo
                     storageRef.child(resourceId!!).downloadUrl.addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             Glide.with(context)
                                 .load(task.result)
-                                .into(lostPhoto)
+                                .into(Photo)
                         } else {
-                            lostPhoto.setImageResource(R.drawable.gray_bg)
+                            Photo.setImageResource(check_category(storyD.category.toString()))
+                            Icon.setImageResource(check_category(storyD.category.toString()))
+
                         }
                     }
                 } else {
-                    lostPhoto.setImageResource(R.drawable.gray_bg)
+                    Photo.setImageResource(check_category(storyD.category.toString()))
+                    Icon.setImageResource(check_category(storyD.category.toString()))
+
                 }
 
 
             }
-
-            var storyOutline: CardView? = null
 
             init {
                 itemView.findViewById<View>(R.id.storyOutline)

@@ -1,6 +1,7 @@
 package com.kgg.android.delivers.UploadActivity
 
 
+import android.R
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.net.Uri
@@ -9,7 +10,6 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
@@ -28,7 +28,7 @@ import java.util.*
 
 class UploadActivity: AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
-    private lateinit var imgUri : Uri
+    private var imgUri : Uri? = null
 
     var latitude = 0.0
     var longitude = 0.0
@@ -42,8 +42,6 @@ class UploadActivity: AppCompatActivity() {
         setContentView(com.kgg.android.delivers.R.layout.activity_fast_create)
 
         auth = FirebaseAuth.getInstance()
-
-        imgUri = "drawable://ic_launcher_background.png".toUri()
 
         latitude = intent.getStringExtra("latitude")?.toDouble()!!
         longitude = intent.getStringExtra("longitude")?.toDouble()!!
@@ -126,6 +124,7 @@ class UploadActivity: AppCompatActivity() {
         story.category = category
         story.latitude = latitude!!
         story.longitude = longitude!!
+        story.bool = true
 
 
         fbFirestore.collection("story")
@@ -139,30 +138,9 @@ class UploadActivity: AppCompatActivity() {
 
                 Log.d(TAG, "DocumentSnapshot written with ID: ${documentReference.id}")
                 val imgRef : StorageReference = fbFireStorage.getReference("images/story/${imageName}")
-                imgRef.putFile(imgUri)
+                if (imgUri!=null)
+                    imgRef.putFile(imgUri!!)
                 Toast.makeText(this, "등록이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
-
-                //비동기 처리나 순차 처리를 한 번 해야 할 듯.. photo나 postId가 가끔 안들어가는 현상이 생김
-
-
-//                while(true){
-//                    val docref =fbFirestore?.collection("story")?.document(documentReference.id)
-//
-//                    docref?.get()?.addOnCompleteListener { task ->
-//                        if (task.isSuccessful) {
-//                            val document = task.result
-//                            if (document.getString("photo")== null || document.getString("postId")==null) {
-//                            } // photo 가 들어가기 전,
-//                            else {
-//                                // photo 값 들어감
-////                                val intent = Intent(this, MainActivity::class.java)
-////                                startActivity(intent)
-//
-//                            }
-//                        }
-//                    }
-//                }
 
                 startActivity(intent)
                 overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
