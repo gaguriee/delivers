@@ -33,7 +33,6 @@ import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.data.Category
 import com.kgg.android.delivers.R
 import com.kgg.android.delivers.databinding.FragmentUploadBinding
-import kotlinx.android.synthetic.main.fragment_map_search.*
 import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPOIItem.*
 import net.daum.mf.map.api.MapPoint
