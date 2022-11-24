@@ -1,14 +1,13 @@
 package com.kgg.android.delivers.StoryActivity
 
 
+import android.app.ListActivity
 import com.teresaholfeld.stories.StoriesProgressView
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -22,14 +21,14 @@ import kotlinx.android.synthetic.main.activity_storydetail.*
 import java.text.SimpleDateFormat
 import java.util.*
 import android.content.Intent
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.core.content.ContentProviderCompat.requireContext
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
+import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.chatActivity.ChatActivity
 import com.kgg.android.delivers.data.ChatRoom
 
@@ -50,6 +49,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     var uid = ""
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     var userInfo = FirebaseFirestore.getInstance().collection("users") //작업할 컬렉션
+    val firestore = FirebaseFirestore.getInstance()
 
 
     private var pressTime = 0L
@@ -88,6 +88,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
 
+
+
         counter = intent.getStringExtra("index")!!.toInt()
 
         var StoryArr = intent.getParcelableArrayListExtra<Story>("StoryArr")
@@ -103,6 +105,34 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 //            intent.putExtra("postId", currentStory.postId)
 //            Log.d("story","${currentStory.postId}")
 //        }
+
+        // 메뉴 버튼
+        menu.setOnClickListener {
+
+            if(auth.currentUser?.uid.toString()==currentStory.writer) { // 자신이 올린 게시글일 때
+                var popupMenu = PopupMenu(this, it)
+                menuInflater?.inflate(R.menu.detail_menu, popupMenu.menu)
+                popupMenu.show()
+
+                popupMenu.setOnMenuItemClickListener {
+
+                    when(it.itemId){
+                        R.id.delete -> { //삭제
+                            firestore.collection("story").document("${currentStory.postId}")
+                                .delete()
+                            val intent = Intent(this, MainActivity::class.java)
+                            startActivity(intent)
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+                            return@setOnMenuItemClickListener true
+                        }
+                        else -> {
+                            return@setOnMenuItemClickListener true
+                        }                        }
+                    }
+                }
+            }
+
+
 
         PROGRESS_COUNT = StoryArr!!.size
         currentStory.photo?.let { Log.d("photo", it) }
@@ -470,6 +500,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         storiesProgressView!!.resume()
         super.onRestart()
     }
+
 
 
 
