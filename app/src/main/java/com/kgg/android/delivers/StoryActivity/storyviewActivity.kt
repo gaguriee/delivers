@@ -222,8 +222,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                 Log.d("Chatting", "postID : ${currentStory.postId}")
 
                 fireDatabase.child("chatrooms")
-                    .orderByChild("postId")
-                    .equalTo(postId)
+                    .orderByChild("users/${uid}")
+                    .equalTo(true)
                     .addListenerForSingleValueEvent(object : ValueEventListener {
                         override fun onCancelled(error: DatabaseError) {
                             Log.d("Chatting","Fail to read data")
@@ -235,19 +235,16 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                                     var chatRoom = data.getValue<ChatRoom>()
                                     Log.d("Chatting","ChatRoom information: $chatRoom")
                                     if (chatRoom != null) {
-                                        if(chatRoom.users.getValue(uid)){
+                                        if(chatRoom.postId == postId){
                                             var chatRoomId = data.key!!
                                             intent.putExtra("ChatRoomId", chatRoomId)
                                             Log.d("Chatting", "ChatRoomId : $chatRoomId")
-
                                             startActivity(intent)
                                         }
                                         else {
                                             intent.putExtra("ChatRoomId","")
                                             startActivity(intent)
                                         }
-
-
                                     }
                                     break
                                 }
