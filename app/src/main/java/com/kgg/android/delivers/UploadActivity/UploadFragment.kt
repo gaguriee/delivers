@@ -231,30 +231,41 @@ class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEv
 
             val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var userNowLocation: Location? = null
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                //User has previously accepted this permission
-                if (ActivityCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                if (checkPermissionForLocation(requireContext())) {
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        //User has previously accepted this permission
+                        if (ActivityCompat.checkSelfPermission(requireContext(),
+                                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                        }
+                    } else {
+                        //Not in api-23, no need to prompt
+                        userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                    }
+                    // Toast.makeText(requireContext(),"좌표 ${longitude}  ${latitude}",Toast.LENGTH_SHORT).show()
+
+                    //위도 , 경도
+                    latitude = userNowLocation?.latitude
+                    longitude = userNowLocation?.longitude
+                    val uNowPosition = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
+
+                    // 현 위치에 마커 찍기
+
+                    mapview.setMapCenterPoint(uNowPosition,true)
+
+                    marker.mapPoint =uNowPosition
+                    mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
+
+                }else{
+                    Toast.makeText(requireContext(),"GPS 권한을 허용해주세요.",Toast.LENGTH_SHORT).show()
                 }
-            } else {
-                //Not in api-23, no need to prompt
-                userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+
+            }else{
+                Toast.makeText(requireContext(),"GPS를 켜주세요.",Toast.LENGTH_SHORT).show()
             }
 
-            // Toast.makeText(requireContext(),"좌표 ${longitude}  ${latitude}",Toast.LENGTH_SHORT).show()
 
-            //위도 , 경도
-            latitude = userNowLocation?.latitude
-            longitude = userNowLocation?.longitude
-            val uNowPosition = MapPoint.mapPointWithGeoCoord(latitude!!, longitude!!)
-
-            // 현 위치에 마커 찍기
-
-            mapview.setMapCenterPoint(uNowPosition,true)
-
-            marker.mapPoint =uNowPosition
-            mapview.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // trackingmode 해제
 
         }
 
@@ -434,11 +445,6 @@ class UploadFragment : Fragment(),MapView.POIItemEventListener,MapView.MapViewEv
         latitude = poiItem!!.mapPoint.mapPointGeoCoord.latitude
         longitude = poiItem!!.mapPoint.mapPointGeoCoord.longitude
     }
-
-
-
-
-
 
 
 

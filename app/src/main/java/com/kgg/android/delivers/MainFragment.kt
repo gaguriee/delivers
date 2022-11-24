@@ -23,6 +23,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -343,23 +344,37 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         binding.currentGpsMain.setOnClickListener{
             val lm: LocationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             var userNowLocation: Location? = null
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                //User has previously accepted this permission
-                if (ActivityCompat.checkSelfPermission(requireContext(),
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-                }
-            } else {
-                //Not in api-23, no need to prompt
-                userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
-            }
-            var lat = userNowLocation?.latitude
-            var long = userNowLocation?.longitude
-            if(lat!=null&&long!=null){
-                //위도 , 경도
 
-                naverMap.cameraPosition = CameraPosition(LatLng(lat as Double,long as Double),16.0)
+
+            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                if (checkPermissionForLocation(requireContext())) {
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        //User has previously accepted this permission
+                        if (ActivityCompat.checkSelfPermission(requireContext(),
+                                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                        }
+                    } else {
+                        //Not in api-23, no need to prompt
+                        userNowLocation = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+                    }
+                    var lat = userNowLocation?.latitude
+                    var long = userNowLocation?.longitude
+                    if(lat!=null&&long!=null){
+                        //위도 , 경도
+
+                        naverMap.cameraPosition = CameraPosition(LatLng(lat as Double,long as Double),16.0)
+                    }
+                }else{
+                    Toast.makeText(requireContext(),"GPS 권한을 허용해주세요.",Toast.LENGTH_SHORT).show()
+                }
+
+
+
+            }else{
+                Toast.makeText(requireContext(),"GPS를 켜주세요.",Toast.LENGTH_SHORT).show()
             }
+
 
 
         }
