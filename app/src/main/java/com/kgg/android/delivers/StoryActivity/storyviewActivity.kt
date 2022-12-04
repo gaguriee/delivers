@@ -241,7 +241,6 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
         // 채팅방으로 전환
-
         DMBtn.setOnClickListener {
             try {
                 val intent = Intent(this, ChatActivity::class.java)
@@ -251,7 +250,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                 var postId = currentStory.postId
                 Log.d("Chatting", "postID : ${currentStory.postId}")
 
-                fireDatabase.child("chatrooms")
+                fireDatabase.child("chatrooms")//채팅방 데이터에서 myUid가 true인 데이터 조회
                     .orderByChild("users/${uid}")
                     .equalTo(true)
                     .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -265,20 +264,20 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                                     var chatRoom = data.getValue<ChatRoom>()
                                     Log.d("Chatting","ChatRoom information: $chatRoom")
                                     if (chatRoom != null) {
-                                        if(chatRoom.postId == postId){
+                                        if(chatRoom.postId == postId){ //해당 채팅방 데이터의 postId가 스토리 postId와 같을 경우 해당 데이터의 key값을 채팅방 id로 할당
                                             var chatRoomId = data.key!!
                                             intent.putExtra("ChatRoomId", chatRoomId)
                                             Log.d("Chatting", "ChatRoomId : $chatRoomId")
                                             startActivity(intent)
                                         }
-                                        else {
+                                        else {//해당 유저에 대한 채팅방 데이터는 있지만 해당 포스트에 대한 이용자의 채팅방이 존재하지 않을 경우
                                             intent.putExtra("ChatRoomId","")
                                             startActivity(intent)
                                         }
                                     }
                                     break
                                 }
-                            }else{
+                            }else{//해당 유저에 대한 채팅방 데이터가 존재하지 않을 경우
                                     intent.putExtra("ChatRoomId","")
                                     startActivity(intent)
                                 }

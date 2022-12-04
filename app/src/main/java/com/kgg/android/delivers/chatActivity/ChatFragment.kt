@@ -220,7 +220,6 @@ class ChatFragment : Fragment() {
                     val intent = Intent(context, ChatActivity::class.java)
                     intent.putExtra("destinationUid", destinationUsers[position]) //상대방의 id를 넘겨줌
                     Log.d("Chatting","destinationUid: ${destinationUsers[position]}")
-//                    intent.putExtra("ChatRoom", chatRooms[position]) //채팅방 정보 넘겨줌
                     intent.putExtra("ChatRoomId", chatRoomKeys[position]) //채팅방 키 정보 넘겨줌
                     Log.d("Chatting","ChatRoomId: ${chatRoomKeys[position]}")
                     intent.putExtra("postId", chatRooms[position].postId) //채팅방 포스트 id넘겨줌

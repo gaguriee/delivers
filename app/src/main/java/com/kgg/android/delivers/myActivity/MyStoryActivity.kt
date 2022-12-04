@@ -118,8 +118,6 @@ class MyStoryActivity : AppCompatActivity() {
             })
         }
 
-
-
     }
 
     class StoriesAdapter(private val stories: List<Story>, context: Context) :

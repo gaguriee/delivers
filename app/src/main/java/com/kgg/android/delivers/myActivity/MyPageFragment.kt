@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.databinding.FragmentMyPageBinding
+import com.kgg.android.delivers.loginActivity.loginActivity
 
 
 private const val ARG_PARAM1 = "param1"
@@ -97,6 +98,13 @@ class MyPageFragment : Fragment() {
             val intent = Intent(requireContext(), MyStoryActivity::class.java)
             intent.putExtra("uid",uid)
             startActivity(intent)
+        }
+
+        binding.logOutButton.setOnClickListener {
+            val intent = Intent(requireContext(), loginActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            startActivity(intent)
+            auth?.signOut()
         }
 
 
