@@ -9,7 +9,7 @@ plugins {
 android {
     signingConfigs {
         debug {
-            storeFile file('/Users/kimgagyeong/delivers.jks')
+            storeFile file('./delivers.jks')
             storePassword 'delivers'
             keyAlias 'delivers'
             keyPassword 'delivers'

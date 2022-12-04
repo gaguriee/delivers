@@ -259,7 +259,7 @@ class ChatActivity : AppCompatActivity() {
 
     }
 
-    //수정 필요요
+
     fun setupChatRoomId() {
        //chatRoomId가 없을 경우 초기화 후 채팅 메세지 목록 초기화
         var chatRoom = ChatRoom(postId)
@@ -332,7 +332,6 @@ class ChatActivity : AppCompatActivity() {
         var messageKeys: ArrayList<String> = arrayListOf()
 
         val myUid = auth.currentUser?.uid.toString()!!
-//        val myUid = "WoKw1NJYG8TB9Z4GDWh4H5e9ieh1"
         val recyclerView = (context as ChatActivity).recyclerView
 
 
@@ -417,24 +416,12 @@ class ChatActivity : AppCompatActivity() {
                 txtMessage.text = message.message
                 txtDatetime.text = message.time
 
-//                sendMsgToDatabase(message) //메세지를 파이어베이스로 전송
 
             }
 
 
 
         }
-//        fun sendMsgToDatabase(message: Message){
-//            if (chatRoomId != null) {
-//                FirebaseDatabase.getInstance().getReference("chatrooms")
-//                    .child(chatRoomId).child("messages")
-//                    .setValue(message)
-//                    .addOnSuccessListener {
-//                        Log.d("chatting", "메세지를 성공적으로 저장했습니다.")
-//                    }
-//            }
-//
-//        }
 
         inner class OtherMessageViewHolder(val binding: ItemOtherMessageBinding) : RecyclerView.ViewHolder(binding.root){
             var txtMessage: TextView = binding.txtMessage
@@ -448,7 +435,6 @@ class ChatActivity : AppCompatActivity() {
 
                 txtDatetime.text = sendDate
 
-//                sendMsgToDatabase(message)
 
             }
         }
