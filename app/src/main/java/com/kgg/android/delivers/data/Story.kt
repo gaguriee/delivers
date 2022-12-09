@@ -14,5 +14,5 @@ data class Story(
     var longitude: Double? = 0.0,
     var registerDate : String? = null,
     var postId:String? = null,
-    var bool:Boolean = true // 24시간 이내 데이터인지 확인
+    var bool:Boolean = true, // 24시간 이내 데이터인지 확인
 ) : Parcelable

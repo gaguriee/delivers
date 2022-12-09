@@ -29,8 +29,13 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.getValue
 import com.kgg.android.delivers.MainActivity
+import com.kgg.android.delivers.RoomDB.model.Read
 import com.kgg.android.delivers.chatActivity.ChatActivity
 import com.kgg.android.delivers.data.ChatRoom
+import com.kgg.android.delivers.fragmentMain
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // 가경
 // 스토리 디테일 보기 페이지
@@ -50,6 +55,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     var userInfo = FirebaseFirestore.getInstance().collection("users") //작업할 컬렉션
     val firestore = FirebaseFirestore.getInstance()
+
 
 
     private var pressTime = 0L
@@ -73,7 +79,6 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
     }
 
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
 
@@ -81,6 +86,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
         setContentView(R.layout.activity_storydetail)
+
 
         auth = FirebaseAuth.getInstance()
         uid = auth.currentUser?.uid.toString()
@@ -97,6 +103,8 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
         image = findViewById<View>(R.id.image) as ImageView
         image!!.background = getResources().getDrawable(R.drawable.rounded_corner_border, null)
         image!!.setClipToOutline(true)
+
+
 
 //        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
 //        val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
@@ -347,6 +355,13 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         findViewById<TextView>(R.id.daysbefore).text = msg
 
+        // 읽음 처리 (roomDB)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            if(!(currentStory.postId in fragmentMain.readList))
+                fragmentMain.db.readDao().insertRead(Read(currentStory.postId))
+        }
+
         // 닉네임 가져오기
         userInfo
             .whereEqualTo("uid", "${currentStory.writer}") //uid가 destinationUid와 일치하는 문서 가져오기
@@ -361,6 +376,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
             .addOnFailureListener { exception ->
                 Log.d("Chatting", "Error getting documents: $exception")
             }
+
 
 
         if (currentStory.photo != "") {
@@ -393,6 +409,62 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         DMBtn.setOnClickListener {
             clickDMButton(currentStory)
+        }
+
+        // 채팅방으로 전환
+        DMBtn.setOnClickListener {
+            Log.d("ppostId", currentStory.postId.toString())
+
+            try {
+                val intent = Intent(this, ChatActivity::class.java)
+                intent.putExtra("destinationUid", currentStory.writer) //상대방의 id를 넘겨줌
+                Log.d("Chatting","destinationUid: ${currentStory.writer}")
+                intent.putExtra("postId", currentStory.postId) //채팅방 포스트 id넘겨줌
+                var postId = currentStory.postId
+                Log.d("Chatting", "postID : ${currentStory.postId}")
+
+                fireDatabase.child("chatrooms")//채팅방 데이터에서 myUid가 true인 데이터 조회
+                    .orderByChild("users/${uid}")
+                    .equalTo(true)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d("Chatting","Fail to read data")
+                        }
+
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if(snapshot.hasChildren()) {
+                                for (data in snapshot.children) {
+                                    var chatRoom = data.getValue<ChatRoom>()
+                                    Log.d("Chatting","ChatRoom information: $chatRoom")
+                                    if (chatRoom != null) {
+                                        if(chatRoom.postId == postId){ //해당 채팅방 데이터의 postId가 스토리 postId와 같을 경우 해당 데이터의 key값을 채팅방 id로 할당
+                                            var chatRoomId = data.key!!
+                                            intent.putExtra("ChatRoomId", chatRoomId)
+                                            Log.d("Chatting", "ChatRoomId : $chatRoomId")
+                                            startActivity(intent)
+                                        }
+                                        else {//해당 유저에 대한 채팅방 데이터는 있지만 해당 포스트에 대한 이용자의 채팅방이 존재하지 않을 경우
+                                            intent.putExtra("ChatRoomId","")
+                                            startActivity(intent)
+                                        }
+                                    }
+                                    break
+                                }
+                            }else{//해당 유저에 대한 채팅방 데이터가 존재하지 않을 경우
+                                intent.putExtra("ChatRoomId","")
+                                startActivity(intent)
+                            }
+                        }
+
+                    })
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this,"채팅방 이동 중 문제가 발생하였습니다.", Toast.LENGTH_SHORT).show()
+                Log.d("chatting", "채팅방 이동 중 문제 발생")
+            } //에러 처리
+
         }
 
     }
@@ -436,6 +508,14 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         findViewById<TextView>(R.id.daysbefore).text = msg
 
+
+        // 읽음 처리 (roomDB)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            if(!(currentStory.postId in fragmentMain.readList))
+                fragmentMain.db.readDao().insertRead(Read(currentStory.postId))
+        }
+
         // 닉네임 가져오기
         userInfo
             .whereEqualTo("uid", "${currentStory.writer}") //uid가 destinationUid와 일치하는 문서 가져오기
@@ -485,6 +565,63 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
             clickDMButton(currentStory)
         }
 
+
+
+        // 채팅방으로 전환
+        DMBtn.setOnClickListener {
+            Log.d("ppostId", currentStory.postId.toString())
+
+            try {
+                val intent = Intent(this, ChatActivity::class.java)
+                intent.putExtra("destinationUid", currentStory.writer) //상대방의 id를 넘겨줌
+                Log.d("Chatting","destinationUid: ${currentStory.writer}")
+                intent.putExtra("postId", currentStory.postId) //채팅방 포스트 id넘겨줌
+                var postId = currentStory.postId
+                Log.d("Chatting", "postID : ${currentStory.postId}")
+
+                fireDatabase.child("chatrooms")//채팅방 데이터에서 myUid가 true인 데이터 조회
+                    .orderByChild("users/${uid}")
+                    .equalTo(true)
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onCancelled(error: DatabaseError) {
+                            Log.d("Chatting","Fail to read data")
+                        }
+
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if(snapshot.hasChildren()) {
+                                for (data in snapshot.children) {
+                                    var chatRoom = data.getValue<ChatRoom>()
+                                    Log.d("Chatting","ChatRoom information: $chatRoom")
+                                    if (chatRoom != null) {
+                                        if(chatRoom.postId == postId){ //해당 채팅방 데이터의 postId가 스토리 postId와 같을 경우 해당 데이터의 key값을 채팅방 id로 할당
+                                            var chatRoomId = data.key!!
+                                            intent.putExtra("ChatRoomId", chatRoomId)
+                                            Log.d("Chatting", "ChatRoomId : $chatRoomId")
+                                            startActivity(intent)
+                                        }
+                                        else {//해당 유저에 대한 채팅방 데이터는 있지만 해당 포스트에 대한 이용자의 채팅방이 존재하지 않을 경우
+                                            intent.putExtra("ChatRoomId","")
+                                            startActivity(intent)
+                                        }
+                                    }
+                                    break
+                                }
+                            }else{//해당 유저에 대한 채팅방 데이터가 존재하지 않을 경우
+                                intent.putExtra("ChatRoomId","")
+                                startActivity(intent)
+                            }
+                        }
+
+                    })
+
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this,"채팅방 이동 중 문제가 발생하였습니다.", Toast.LENGTH_SHORT).show()
+                Log.d("chatting", "채팅방 이동 중 문제 발생")
+            } //에러 처리
+
+        }
 
     }
 
