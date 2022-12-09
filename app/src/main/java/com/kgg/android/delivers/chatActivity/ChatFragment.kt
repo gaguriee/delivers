@@ -83,7 +83,6 @@ class ChatFragment : Fragment() {
 
 
         init {
-
             //접속한 userid
             auth = FirebaseAuth.getInstance()
             myUid = auth.currentUser?.uid.toString()!!
@@ -137,7 +136,7 @@ class ChatFragment : Fragment() {
             var destinationUid: String? = null
 
             //채팅방에 있는 유저 모두 체크
-            for (user in chatRooms[position].users?.keys!!) {
+            for (user in chatRooms[chatRooms.size - position -1].users?.keys!!) {
                 if (user != myUid) {//본인 제외
                     destinationUid = user
                     destinationUsers.add(destinationUid) //상대방의 uid를 destinationUsers에 저장
@@ -166,7 +165,7 @@ class ChatFragment : Fragment() {
             //스토리 사진 프로필로 띄우기
             val storyDocCol = fireStore.collection("story")
             storyDocCol
-                .whereEqualTo("postId", chatRooms[position].postId)
+                .whereEqualTo("postId", chatRooms[chatRooms.size - position -1].postId)
                 .get()
                 .addOnSuccessListener { result ->
                     for(document in result){
@@ -204,10 +203,10 @@ class ChatFragment : Fragment() {
             //메세지 내림차순 정렬 후 마지막 메시지의 키 값을 가짐
             try {
                 val messageMap = TreeMap<String, Message>(reverseOrder()) //TreeMap을 역순으로 선언
-                messageMap.putAll(chatRooms[position].messages) //chatRoom의 messages를 모두 넣어줌
+                messageMap.putAll(chatRooms[chatRooms.size - position -1].messages) //chatRoom의 messages를 모두 넣어줌
                 val lastMessageKey =
                     messageMap.keys.toTypedArray()[0] //toTypedArray()배열로 변환한 뒤 첫번째 값을 lastMessageKey에 넣어줌
-                holder.textViewLastMessage.text = chatRooms[position].messages[lastMessageKey]?.message
+                holder.textViewLastMessage.text = chatRooms[chatRooms.size - position -1].messages[lastMessageKey]?.message
             }catch(e: IndexOutOfBoundsException){
                 Log.d("Chatting","${e.printStackTrace()}")
             }
@@ -218,11 +217,11 @@ class ChatFragment : Fragment() {
             holder.itemView.setOnClickListener {
                 try {
                     val intent = Intent(context, ChatActivity::class.java)
-                    intent.putExtra("destinationUid", destinationUsers[position]) //상대방의 id를 넘겨줌
-                    Log.d("Chatting","destinationUid: ${destinationUsers[position]}")
-                    intent.putExtra("ChatRoomId", chatRoomKeys[position]) //채팅방 키 정보 넘겨줌
-                    Log.d("Chatting","ChatRoomId: ${chatRoomKeys[position]}")
-                    intent.putExtra("postId", chatRooms[position].postId) //채팅방 포스트 id넘겨줌
+                    intent.putExtra("destinationUid", destinationUsers[chatRooms.size - position -1]) //상대방의 id를 넘겨줌
+                    Log.d("Chatting","destinationUid: ${destinationUsers[chatRooms.size - position -1]}")
+                    intent.putExtra("ChatRoomId", chatRoomKeys[chatRooms.size - position -1]) //채팅방 키 정보 넘겨줌
+                    Log.d("Chatting","ChatRoomId: ${chatRoomKeys[chatRooms.size - position -1]}")
+                    intent.putExtra("postId", chatRooms[chatRooms.size - position -1].postId) //채팅방 포스트 id넘겨줌
 
                     context?.startActivity(intent)
                     (context as AppCompatActivity).finish()
