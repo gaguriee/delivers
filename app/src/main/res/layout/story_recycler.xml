@@ -4,31 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="10dp"
+    android:layout_marginLeft="5dp"
     android:layout_marginTop="6dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="2dp">
 
     <ImageView
         android:id="@+id/storyIcon"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:layout_marginTop="8dp"
+        android:src="@drawable/candy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/storyOutline"
-        android:src="@drawable/candy" />
+        app:layout_constraintTop_toBottomOf="@+id/storyOutline" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/storyOutline"
-        android:layout_width="58dp"
-        android:layout_height="57dp"
+        android:layout_width="59dp"
+        android:layout_height="59dp"
         android:layout_gravity="center"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="2dp"
         android:background="@drawable/story_balloon"
         app:cardBackgroundColor="#31A9F3"
-        app:cardCornerRadius="27dp"
+        app:cardCornerRadius="28dp"
         app:cardElevation="2dp"
         app:cardPreventCornerOverlap="false"
         app:cardUseCompatPadding="false"
+        app:layout_constraintBottom_toTopOf="@+id/storyIcon"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -39,8 +45,7 @@
             android:layout_gravity="center"
             android:background="@drawable/story_balloon"
             app:cardBackgroundColor="#FFFFFF"
-            app:cardCornerRadius="27dp"
-            app:cardElevation="2dp"
+            app:cardCornerRadius="28dp"
             app:cardPreventCornerOverlap="false"
             app:cardUseCompatPadding="false"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -50,10 +55,10 @@
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/story_circle"
-                android:layout_width="53dp"
-                android:layout_height="53dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_gravity="center"
-                app:cardCornerRadius="25dp">
+                app:cardCornerRadius="28dp">
 
                 <ImageView
                     android:id="@+id/story_imgSM"

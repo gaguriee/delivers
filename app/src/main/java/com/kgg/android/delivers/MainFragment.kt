@@ -1,6 +1,7 @@
 package com.kgg.android.delivers
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -23,17 +24,24 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.graphics.createBitmap
+import androidx.core.view.size
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import com.bumptech.glide.Glide
+import com.bumptech.glide.Glide.init
+import com.kgg.android.delivers.RoomDB.AppDatabase
 import com.google.android.gms.location.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.RoomDB.model.Read
 import com.kgg.android.delivers.data.Story
 import com.kgg.android.delivers.databinding.FragmentMainBinding
 import com.kgg.android.delivers.StoryActivity.storyviewActivity
@@ -48,6 +56,10 @@ import com.naver.maps.map.OnMapReadyCallback
 import com.naver.maps.map.overlay.Marker
 import com.naver.maps.map.overlay.Overlay
 import com.naver.maps.map.overlay.OverlayImage
+import kotlinx.android.synthetic.main.activity_storydetail.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import kotlin.collections.ArrayList
 
@@ -57,6 +69,7 @@ import kotlin.collections.ArrayList
 
 class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
+    lateinit var db: AppDatabase
     private lateinit var auth: FirebaseAuth
     var uid = ""
     val firestore = FirebaseFirestore.getInstance()
@@ -65,6 +78,10 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
     var latitude = 0.0
     var longitude = 0.0
     var currentLocation = ""
+    var readList : List<String> = listOf("")
+
+
+
 
     private var mFusedLocationProviderClient: FusedLocationProviderClient? = null // 현재 위치를 가져오기 위한 변수
     lateinit var mLastLocation: Location // 위치 값을 가지고 있는 객체
@@ -85,6 +102,9 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         auth = FirebaseAuth.getInstance()
         uid = auth.currentUser?.uid.toString()
         val appCollection = firestore.collection("users")
+
+
+
 
 
 
@@ -136,124 +156,12 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
         main_map = binding.mainMap
         main_map.onCreate(savedInstanceState)
-        //
 
 
-
-        val sAdapter = StoriesAdapter(storyList, requireContext())
-        binding.sRecyclerView.adapter = sAdapter
-
-
-        val layout2 = LinearLayoutManager(requireContext()).also { it.orientation = LinearLayoutManager.HORIZONTAL }
-        binding.sRecyclerView.layoutManager = layout2
-        binding.sRecyclerView.setHasFixedSize(true)
 
         var doccol = firestore.collection("story")
 
 
-        Log.d("CheckStoryList" , storyList.toString())
-        Log.d("firestore" , firestore.toString())
-
-
-
-
-
-        doccol.get()
-            .addOnSuccessListener { result ->
-                storyList.clear()
-                var count = 0
-                for (document in result) {
-                    val item = Story(
-                        document["writer"] as String,
-                        document["location"] as String,
-                        document["photo"] as String,
-                        document["description"] as String,
-                        document["category"] as String,
-                        document["latitude"] as Double,
-                        document["longitude"] as Double,
-                        document["registerDate"] as String,
-                        document["postId"] as String,
-                        document["bool"] as Boolean
-                    )
-
-                    // 24시간이 지난 post일 경우 삭제하기
-
-                    var currTime =  System.currentTimeMillis()
-                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
-                    var registerTime = dateFormat.parse(item.registerDate).time
-
-                    var diffTime: Long = (currTime - registerTime) / 1000
-                    if (diffTime >= 60*60*24) {
-                        doccol.document(item.postId.toString())
-                            .update("bool", false)
-                    }
-
-
-                    var targetLocation = Location("")
-                    targetLocation.latitude =item.latitude!!
-                    targetLocation.longitude = item.longitude!!
-
-
-                    var distance = myLocation.distanceTo(targetLocation)
-
-                    Log.d("distance",distance.toString())
-
-
-                    if(item.bool == true){
-                        if (count==0 ) {
-                            storyList.add(item)
-                            count++
-                            continue
-                        }
-                        var longt = storyList[count-1].longitude
-                        var ltit = storyList[count-1].latitude
-                        var docLoc = Location("")
-                        docLoc.longitude = longt!!
-                        docLoc.latitude = ltit!!
-                        var dt = myLocation.distanceTo(docLoc)
-                        if(distance>=dt){
-                            storyList.add(item)
-                            count++
-                        }
-                        else{
-                            for(i in 0 until count){
-                                var longt = storyList[i].longitude
-                                var ltit = storyList[i].latitude
-                                var docLoc = Location("")
-                                docLoc.longitude = longt!!
-                                docLoc.latitude = ltit!!
-                                var dt = myLocation.distanceTo(docLoc)
-                                if(distance<dt){
-                                    storyList.add(Story("","","","","",0.0,0.0 , "", "" ))
-
-                                    for(c in count downTo i+1){
-                                        storyList[c]=storyList[c-1]
-                                    }
-                                    storyList[i]=item
-                                    count++
-                                    break
-                                }
-                            }
-
-                        }
-                    }
-
-
-
-                    //    imgArr.add(document["Imgurl"] as String)
-                    //   desArr.add(document["description"] as String)
-                }
-
-                if (sAdapter != null) {
-                    sAdapter.notifyDataSetChanged()
-
-                }
-
-
-                Log.d("CheckStoryList" , storyList.toString())
-            }.addOnFailureListener { exception ->
-                Log.w("ListActivity22", "Error getting documents: $exception")
-            }
         // 마커 업데이트
         doccol.get()
             .addOnSuccessListener { result ->
@@ -291,30 +199,10 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                 Log.w("ListActivity22", "Error getting documents: $exception")
             }
 
-        if (sAdapter != null) {
-            sAdapter.setOnItemClickListener(object : StoriesAdapter.OnItemClickListener {
-                override fun onItemClick(v: View, data: Story, pos: Int) {
 
-                    val intent = Intent(requireContext(), storyviewActivity::class.java)
-
-                    intent.putExtra("index", pos.toString())
-                    //    intent.putStringArrayListExtra("imgArr", imgArr)
-                    //  intent.putStringArrayListExtra("desArr", desArr)
-                    intent.putParcelableArrayListExtra("StoryArr", storyList)
-                    startActivity(intent)
-                    activity?.overridePendingTransition(0, 0)
-
-                }
-
-            })
-        }
 
 
         // Map 파트
-
-        var gpsBtn = binding.currentGpsMain // 현재 위치 버튼
-
-
 
         main_map.getMapAsync(this)
 
@@ -416,6 +304,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                     if(item.bool == true)
                         storyList.add(item)
                         Log.d("storyViewActivity_only","Error3 getting documents:")
+
                         intent.putParcelableArrayListExtra("StoryArr", storyList)
                         context?.startActivity(intent)
 
@@ -520,6 +409,152 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
     override fun onResume() {
         super.onResume()
         main_map.onResume()
+
+        //Room DB
+
+        db = Room.databaseBuilder(
+            requireContext(),
+            AppDatabase::class.java,
+            "read_DB"
+        ).build()
+        CoroutineScope(Dispatchers.IO).launch {
+            Log.d("RoomDB", db.readDao().getAll().toString())        }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            readList = db.readDao().getAllPid()
+        }
+
+
+        val sAdapter = StoriesAdapter(storyList, requireContext())
+        binding.sRecyclerView.adapter = sAdapter
+
+
+        val layout2 = LinearLayoutManager(requireContext()).also { it.orientation = LinearLayoutManager.HORIZONTAL }
+        binding.sRecyclerView.layoutManager = layout2
+        binding.sRecyclerView.setHasFixedSize(true)
+
+        var doccol = firestore.collection("story")
+
+
+        Log.d("CheckStoryList" , storyList.toString())
+        Log.d("firestore" , firestore.toString())
+
+        var readStory = arrayListOf<Story>()
+        doccol.get()
+            .addOnSuccessListener { result ->
+                storyList.clear()
+                var count = 0
+                for (document in result) {
+                    val item = Story(
+                        document["writer"] as String,
+                        document["location"] as String,
+                        document["photo"] as String,
+                        document["description"] as String,
+                        document["category"] as String,
+                        document["latitude"] as Double,
+                        document["longitude"] as Double,
+                        document["registerDate"] as String,
+                        document["postId"] as String,
+                        document["bool"] as Boolean
+                    )
+
+                    // 24시간이 지난 post일 경우 삭제하기
+
+                    var currTime =  System.currentTimeMillis()
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale("ko", "KR"))
+                    var registerTime = dateFormat.parse(item.registerDate).time
+
+                    var diffTime: Long = (currTime - registerTime) / 1000
+                    if (diffTime >= 60*60*24) {
+                        doccol.document(item.postId.toString())
+                            .update("bool", false)
+                    }
+
+
+                    var targetLocation = Location("")
+                    targetLocation.latitude =item.latitude!!
+                    targetLocation.longitude = item.longitude!!
+
+
+                    var distance = myLocation.distanceTo(targetLocation)
+
+                    Log.d("distance",distance.toString())
+
+
+                    if(item.bool == true){
+                        if (item.postId in readList){
+                            readStory.add(item)
+                            continue
+                        }
+                        if (count==0 ) {
+                            storyList.add(item)
+                            count++
+                            continue
+                        }
+                        var longt = storyList[count-1].longitude
+                        var ltit = storyList[count-1].latitude
+                        var docLoc = Location("")
+                        docLoc.longitude = longt!!
+                        docLoc.latitude = ltit!!
+                        var dt = myLocation.distanceTo(docLoc)
+                        if(distance>=dt){
+                            storyList.add(item)
+                            count++
+                        }
+                        else{
+                            for(i in 0 until count){
+                                var longt = storyList[i].longitude
+                                var ltit = storyList[i].latitude
+                                var docLoc = Location("")
+                                docLoc.longitude = longt!!
+                                docLoc.latitude = ltit!!
+                                var dt = myLocation.distanceTo(docLoc)
+                                if(distance<dt){
+                                    storyList.add(Story("","","","","",0.0,0.0 , "", "" ))
+                                    for(c in count downTo i+1){
+                                        storyList[c]=storyList[c-1]
+                                    }
+                                    storyList[i]=item
+                                    count++
+                                    break
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+                Log.d("alreadyread", storyList.toString())
+                storyList.addAll(readStory)
+
+                if (sAdapter != null) {
+                    sAdapter.notifyDataSetChanged()
+
+                }
+
+
+                Log.d("CheckStoryList" , storyList.toString())
+            }.addOnFailureListener { exception ->
+                Log.w("ListActivity22", "Error getting documents: $exception")
+            }
+
+        if (sAdapter != null) {
+            sAdapter.setOnItemClickListener(object : StoriesAdapter.OnItemClickListener {
+                override fun onItemClick(v: View, data: Story, pos: Int) {
+
+                    val intent = Intent(requireContext(), storyviewActivity::class.java)
+
+                    intent.putExtra("index", pos.toString())
+                    //    intent.putStringArrayListExtra("imgArr", imgArr)
+                    //  intent.putStringArrayListExtra("desArr", desArr)
+                    intent.putParcelableArrayListExtra("StoryArr", storyList)
+                    startActivity(intent)
+                    activity?.overridePendingTransition(0, 0)
+
+                }
+
+            })
+        }
     }
 
     override fun onPause() {
@@ -590,7 +625,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         } else Math.ceil((resources.displayMetrics.density * value).toDouble()).toFloat()
     }
 
-    class StoriesAdapter(private val stories: List<Story>, context: Context) :
+    class StoriesAdapter(private val stories: ArrayList<Story>, context: Context) :
         RecyclerView.Adapter<StoriesAdapter.StoriesViewHolder>() {
 
         open fun check_category(category:String):Int{
@@ -616,12 +651,15 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         private val storageRef: StorageReference = storage.reference
 
         interface OnItemClickListener {
-            fun onItemClick(v: View, data: Story, pos: Int)
+            fun onItemClick(v: View, data: Story, pos: Int){
+
+            }
         }
 
         private var listener: OnItemClickListener? = null
         fun setOnItemClickListener(listener: OnItemClickListener) {
             this.listener = listener
+
         }
 
 
@@ -631,8 +669,20 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
 
             private val Photo = itemView.findViewById<ImageView>(R.id.story_imgSM)
             private val Icon = itemView.findViewById<ImageView>(R.id.storyIcon)
+            private val storyOutline = itemView.findViewById<CardView>(R.id.storyOutline)
 
+
+            @SuppressLint("ResourceAsColor")
             fun bind(storyD: Story, context: Context) {
+
+                if(fragmentMain.readList.contains(storyD.postId)){
+                    val color: Int = R.color.black
+                    storyOutline.setCardBackgroundColor(color)
+                }
+                else{
+                    val color: Int =  Color.parseColor("#31A9F3")
+                    storyOutline.setCardBackgroundColor(color)
+                }
 
                 val pos = adapterPosition
                 if (pos != RecyclerView.NO_POSITION) {
@@ -640,6 +690,8 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
                         listener?.onItemClick(itemView, storyD, pos)
                     }
                 }
+
+
 
 
                 if (storyD.photo != "") {
@@ -683,6 +735,22 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
         override fun onBindViewHolder(holder: StoriesViewHolder, position: Int) {
 
             holder.bind(stories[position], context)
+
+            holder.itemView.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if(!(stories[position].postId in fragmentMain.readList))
+                        fragmentMain.db.readDao().insertRead(Read(stories[position].postId))
+                }
+                Log.d("readList", fragmentMain.readList.toString())
+                val intent = Intent( context, storyviewActivity::class.java)
+
+
+                intent.putExtra("postId", stories[position].postId)
+                intent.putExtra("index",position.toString())
+                intent.putParcelableArrayListExtra("StoryArr", stories)
+                context.startActivity(intent)
+
+            }
 
         }
 
