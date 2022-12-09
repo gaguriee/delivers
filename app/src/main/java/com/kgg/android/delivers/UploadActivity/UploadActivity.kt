@@ -1,11 +1,12 @@
 package com.kgg.android.delivers.UploadActivity
 
 
-import android.R
 import android.content.ContentValues.TAG
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
@@ -19,6 +20,11 @@ import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.data.Story
 import kotlinx.android.synthetic.main.activity_fast_create.*
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.task.vision.classifier.Classifications
+import org.tensorflow.lite.task.vision.classifier.ImageClassifier
+import org.tensorflow.lite.task.vision.detector.Detection
+import org.tensorflow.lite.task.vision.detector.ObjectDetector
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -29,6 +35,7 @@ import java.util.*
 class UploadActivity: AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var imgUri : Uri? = null
+    private var myimg: Bitmap? = null
 
     var latitude = 0.0
     var longitude = 0.0
@@ -77,6 +84,46 @@ class UploadActivity: AppCompatActivity() {
 
     }
 
+    // object detection 함수
+    private fun runObjectDetection(bitmap: Bitmap) {
+        val image = TensorImage.fromBitmap(bitmap)
+        val options = ObjectDetector.ObjectDetectorOptions.builder()
+            .setMaxResults(5)
+            .setScoreThreshold(0.5f)
+            .build()
+        val detector = ObjectDetector.createFromFileAndOptions(
+            this, // the application context
+            "model1.tflite", // must be same as the filename in assets folder
+            options
+        )
+        val option2 = ImageClassifier.ImageClassifierOptions.builder().setMaxResults(5).setScoreThreshold(0.5f).build()
+        val detect2 = ImageClassifier.createFromFileAndOptions(this,"model.tflite",option2)
+
+        val results = detector.detect(image) // detection 결과!!!
+        val results2 = detect2.classify(image) // detection 결과!!!
+        Log.d("itm","${results2} hello!!")
+        debugPrint(results2)
+
+    }
+    private fun debugPrint(results : List<Classifications>) {
+        var labels = ""
+        for ((i, obj) in results.withIndex()) {
+
+
+            for ((j, category) in obj.categories.withIndex()) {
+                labels = labels + " " + category.displayName
+                Log.d(TAG, "    Label $j: ${category.label}")
+                Log.d(TAG, "    Label $j: ${category.displayName}")
+                val confidence: Int = category.score.times(100).toInt()
+                Log.d(TAG, "    Confidence: ${confidence}%")
+            }
+        }
+        labels = "Let's eat" + labels + " together~!"
+        postTitle.setText(labels)
+        Log.d(TAG,"${labels}")
+    }
+
+
 
     override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?){
         super.onActivityResult(requestCode, resultCode, data)
@@ -85,6 +132,8 @@ class UploadActivity: AppCompatActivity() {
             10 ->
                 if (resultCode == RESULT_OK) {
                     imgUri = data?.data!!
+                    myimg = MediaStore.Images.Media.getBitmap(this.contentResolver, imgUri) as Bitmap
+                    runObjectDetection(MediaStore.Images.Media.getBitmap(this.contentResolver, imgUri))
                     Glide.with(this).load(imgUri).into(imageAttach)
                 }
             else {
