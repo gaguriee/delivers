@@ -16,6 +16,7 @@
         android:background="@drawable/background_talk_mine"
         android:gravity="start|center_vertical"
         android:linksClickable="true"
+        android:maxWidth="200dp"
         android:padding="10dp"
         android:text="안녕하세요."
         android:textColor="@color/black"
@@ -36,7 +37,7 @@
         app:layout_constraintTop_toTopOf="@+id/txt_message"
         app:layout_constraintVertical_bias="0.8" />
 
-<!--    <TextView-->
+    <!--    <TextView-->
 <!--        android:id="@+id/txt_isShown"-->
 <!--        android:layout_width="wrap_content"-->
 <!--        android:layout_height="wrap_content"-->

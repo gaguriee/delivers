@@ -19,6 +19,7 @@ import com.google.firebase.database.*
 import com.google.firebase.database.ktx.getValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.kgg.android.delivers.MainActivity
@@ -43,7 +44,7 @@ class ChatActivity : AppCompatActivity() {
 
     lateinit var btn_quit: ImageButton
     lateinit var btn_send: Button
-    lateinit var exit_button: Button
+    lateinit var exit_button: ImageView
     lateinit var chat_title: TextView
     lateinit var edt_message: EditText
     lateinit var recyclerView: RecyclerView
@@ -104,6 +105,8 @@ class ChatActivity : AppCompatActivity() {
         } else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
             setupRecycler()
     }
+
+
 
 
     fun initializeProperty(){ //변수 초기화
