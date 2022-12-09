@@ -118,6 +118,10 @@ class ChatActivity : AppCompatActivity() {
        chatRoomId = intent.getStringExtra("ChatRoomId")!! //intent로부터 chatRoomId넘겨받음
        destinationUid = intent.getStringExtra("destinationUid")!! //intent로부터 destinationUid 넘겨받음
        postId = intent.getStringExtra("postId")!! //intent로부터 postId넘겨 받음
+        Log.d("Chatting","Chatroom ID: $chatRoomId")
+        Log.d("Chatting","dest ID: $destinationUid")
+        Log.d("Chatting","post ID: $postId")
+        Log.d("Chatting","my ID: ${myUid}")
 
 
     }
