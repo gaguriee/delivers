@@ -106,13 +106,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
 
-//        //스토리에서 채팅하기 버튼 누르면 채팅방으로 이동
-//        val chatButton = findViewById<LinearLayout>(R.id.DMBtn)
-//        chatButton.setOnClickListener{
-//            val intent = Intent(this, ChatActivity::class.java)
-//            intent.putExtra("postId", currentStory.postId)
-//            Log.d("story","${currentStory.postId}")
-//        }
+
 
         // 메뉴 버튼
         menu.setOnClickListener {
@@ -260,6 +254,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
 
     }
+
     fun clickDMButton(currentStory:Story){
         var currentStory = currentStory
         // 채팅방으로 전환
@@ -269,7 +264,7 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                 intent.putExtra("destinationUid", currentStory.writer) //상대방의 id를 넘겨줌
                 Log.d("Chatting", "destinationUid: ${currentStory.writer}")
                 intent.putExtra("postId", currentStory.postId) //채팅방 포스트 id넘겨줌
-                var postId = currentStory.postId
+
                 Log.d("Chatting", "postID : ${currentStory.postId}")
 
                 fireDatabase.child("chatrooms")//채팅방 데이터에서 myUid가 true인 데이터 조회
@@ -281,25 +276,34 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
                         }
 
                         override fun onDataChange(snapshot: DataSnapshot) {
+                            var state = true
                             if (snapshot.hasChildren()) {
                                 for (data in snapshot.children) {
                                     var chatRoom = data.getValue<ChatRoom>()
                                     if (chatRoom != null) {
+                                        Log.d("Chatting", "ChatRoom information: $chatRoom")
                                         if (chatRoom.postId == currentStory.postId) { //해당 채팅방 데이터의 postId가 스토리 postId와 같을 경우 해당 데이터의 key값을 채팅방 id로 할당
                                             var chatRoomId = data.key!!
-                                            Log.d("Chatting", "ChatRoom information: $chatRoom")
                                             intent.putExtra("ChatRoomId", chatRoomId)
                                             Log.d("Chatting", "ChatRoomId : $chatRoomId")
-                                            startActivity(intent)
-                                        } else {//해당 유저에 대한 채팅방 데이터는 있지만 해당 포스트에 대한 이용자의 채팅방이 존재하지 않을 경우
-                                            intent.putExtra("ChatRoomId", "")
+                                            state = false
                                             startActivity(intent)
                                         }
                                     }
-                                    break
                                 }
+                                Log.d("Chatting", "State: $state")
+                               if(state) {
+                                   //해당 유저에 대한 채팅방 데이터는 있지만 해당 포스트에 대한 이용자의 채팅방이 존재하지 않을 경우
+                                   intent.putExtra("ChatRoomId", "")
+                                   Log.d(
+                                       "Chatting",
+                                       "There exist chatting data but No chatroom information"
+                                   )
+                                   startActivity(intent)
+                               }
                             } else {//해당 유저에 대한 채팅방 데이터가 존재하지 않을 경우
                                 intent.putExtra("ChatRoomId", "")
+                                Log.d("Chatting", "No chatroom information")
                                 startActivity(intent)
                             }
                         }
