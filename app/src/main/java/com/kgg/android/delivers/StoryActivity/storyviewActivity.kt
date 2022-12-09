@@ -411,6 +411,14 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
             clickDMButton(currentStory)
         }
 
+        // 본인이 올린 스토리면 채팅 버튼 숨기기
+        if( uid == currentStory.writer){
+            DMBtn.visibility = View. INVISIBLE
+        }
+        else{
+            DMBtn.visibility = View.VISIBLE
+        }
+
         // 채팅방으로 전환
         DMBtn.setOnClickListener {
             Log.d("ppostId", currentStory.postId.toString())
@@ -563,6 +571,14 @@ class storyviewActivity : AppCompatActivity(), StoriesProgressView.StoriesListen
 
         DMBtn.setOnClickListener {
             clickDMButton(currentStory)
+        }
+
+        // 본인이 올린 스토리면 채팅 버튼 숨기기
+        if( uid == currentStory.writer){
+            DMBtn.visibility = View. INVISIBLE
+        }
+        else{
+            DMBtn.visibility = View.VISIBLE
         }
 
 
