@@ -1,5 +1,6 @@
 package com.kgg.android.delivers.chatActivity
 
+import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
@@ -37,6 +38,7 @@ import com.kgg.android.delivers.databinding.ItemOtherMessageBinding
 import kotlinx.android.synthetic.main.activity_chat.*
 import kotlinx.android.synthetic.main.activity_fast_create.*
 import kotlinx.android.synthetic.main.certification.*
+import kotlinx.android.synthetic.main.custom_dialog.*
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -62,6 +64,7 @@ class ChatActivity : AppCompatActivity() {
     lateinit var chatRoomId: String
     lateinit var destinationUid: String
     lateinit var postId: String
+    var headcnt = 1
 
 
     private val fireDatabase = FirebaseDatabase.getInstance().reference
@@ -170,13 +173,26 @@ class ChatActivity : AppCompatActivity() {
                     }
                     if(result!=""){
                         amount = result.replace("[^0-9]".toRegex(), "") // extract number from string
-                        edt_message.setText("Total amount is.. : "+amount.toString())
+
                     }
+                    var dia = CustomDialog(this)
+                    dia.MyDia()
+                    dia.dialog.btnDone.setOnClickListener{
+                        if(dia.dialog.dialogEt.text.toString()!=""&&(isNumeric(dia.dialog.dialogEt.text.toString())==true)){
+                            headcnt = dia.dialog.dialogEt.text.toString().toInt()
+                            edt_message.setText(" Total amount is ￦${amount} ! You should pay : ￦"+(amount.toDouble()/headcnt.toDouble()).toString())
+                            dia.dialog.dismiss()
+                        }else{
+                            Toast.makeText(this,"Please enter the number of people!",Toast.LENGTH_SHORT).show()
+                        }
+
+                    }
+
 
 
                 }
                 else {
-                    finish() // 사진 선택이 안된 채로 뒤로 가기가 눌렸을 경우 액티비티 종t
+                    finish() // 사진 선택이 안된 채로 뒤로 가기가 눌렸을 경우 액티비티 종료
                 }
 
         }
@@ -577,6 +593,33 @@ class ChatActivity : AppCompatActivity() {
             }
         }
     }
+
+    // custom dialog
+    class CustomDialog(context:Context){
+        val dialog = Dialog(context)
+        fun MyDia(){
+            dialog.setContentView(R.layout.custom_dialog)
+            dialog.window!!.setLayout(WindowManager.LayoutParams.MATCH_PARENT,WindowManager.LayoutParams.WRAP_CONTENT)
+            dialog.btnCan.setOnClickListener{
+                dialog.dismiss()
+            }
+            dialog.show()
+        }
+    }
+    fun isNumeric(s: String): Boolean {
+        return try {
+            s.toInt()
+            true
+        } catch (e: NumberFormatException) {
+            false
+        }
+    }
+
+
+
+
+
+
 
 
 }
