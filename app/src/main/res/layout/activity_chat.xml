@@ -116,4 +116,17 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/exit_button" />
 
+    <ImageButton
+        android:id="@+id/cal"
+        android:layout_width="38dp"
+        android:layout_height="35dp"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toStartOf="@+id/exit_button"
+        app:layout_constraintHorizontal_bias="0.854"
+        app:layout_constraintStart_toEndOf="@+id/txt_TItle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/keys" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

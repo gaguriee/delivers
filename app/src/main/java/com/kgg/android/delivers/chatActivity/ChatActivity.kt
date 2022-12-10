@@ -3,9 +3,12 @@ package com.kgg.android.delivers.chatActivity
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -13,6 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.os.HandlerCompat.postDelayed
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.*
@@ -22,6 +26,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.googlecode.tesseract.android.TessBaseAPI
 import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.R
 import com.kgg.android.delivers.data.ChatRoom
@@ -30,7 +35,9 @@ import com.kgg.android.delivers.databinding.ActivityChatBinding
 import com.kgg.android.delivers.databinding.ItemMineMessageBinding
 import com.kgg.android.delivers.databinding.ItemOtherMessageBinding
 import kotlinx.android.synthetic.main.activity_chat.*
+import kotlinx.android.synthetic.main.activity_fast_create.*
 import kotlinx.android.synthetic.main.certification.*
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -49,6 +56,7 @@ class ChatActivity : AppCompatActivity() {
     lateinit var edt_message: EditText
     lateinit var recyclerView: RecyclerView
     lateinit var chatRoom: ChatRoom
+    lateinit var btn_payment: ImageButton
 
     lateinit var myUid: String
     lateinit var chatRoomId: String
@@ -59,6 +67,19 @@ class ChatActivity : AppCompatActivity() {
     private val fireDatabase = FirebaseDatabase.getInstance().reference
     private val fireStore = FirebaseFirestore.getInstance()
     private lateinit var auth: FirebaseAuth
+
+    // for OCR
+    var image //사용되는 이미지
+            : Bitmap? = null
+    private var mTess //Tess API reference
+            : TessBaseAPI? = null
+    var datapath = ""
+
+
+    var OCRTextView // OCR 결과뷰
+            : TextView? = null
+
+    private var imgUri : Uri? = null
 
 
 
@@ -74,6 +95,8 @@ class ChatActivity : AppCompatActivity() {
         btn_send = binding.btnSubmit
         chat_title = binding.txtTItle
         exit_button = binding.exitButton
+        btn_payment = binding.cal
+
 
 
 
@@ -104,6 +127,59 @@ class ChatActivity : AppCompatActivity() {
 
         } else //채팅방 키가 있으면 채팅 메세지 목록 보여주기
             setupRecycler()
+
+        // 정산 버튼 누르면 영수증 사진 올리기
+        btn_payment.setOnClickListener() {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            startActivityForResult(intent, 10)
+
+        }
+    }
+
+    // 영수증 사진 업로드
+    override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?){
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+            10 ->
+                if (resultCode == RESULT_OK) {
+                    datapath = "$filesDir/tesseract/"
+
+                    checkFile(File(datapath + "tessdata/"))
+                    //Tesseract API 언어 세팅
+                    val lang = "kor"
+
+                    //OCR 세팅
+                    mTess = TessBaseAPI()
+                    mTess!!.init(datapath, lang)
+                    imgUri = data?.data!!
+                    image = MediaStore.Images.Media.getBitmap(this.contentResolver, imgUri) as Bitmap
+                    mTess!!.setImage(image)
+                    var OCRresult = mTess!!.utF8Text
+                    Log.d("ocrtest","hi!! ${OCRresult}")
+                    OCRresult = OCRresult.replace(" ", "") // remove blank
+                    val lines = OCRresult.split("\r?\n|\r".toRegex()).toTypedArray() // split by linebreak
+                    var result = ""
+                    var amount = ""
+
+                    for(i in lines){
+                        if(i.contains("합계")||i.contains("함계")||i.contains("총금액")||i.contains("받은금액")||i.contains("걸제굼액")||i.contains("결제굼액")||i.contains("결제금액")||i.contains("총결제금액")){
+                            result = i
+                        }
+                    }
+                    if(result!=""){
+                        amount = result.replace("[^0-9]".toRegex(), "") // extract number from string
+                        edt_message.setText("Total amount is.. : "+amount.toString())
+                    }
+
+
+                }
+                else {
+                    finish() // 사진 선택이 안된 채로 뒤로 가기가 눌렸을 경우 액티비티 종t
+                }
+
+        }
     }
 
 
@@ -458,6 +534,48 @@ class ChatActivity : AppCompatActivity() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
 
+    }
+
+
+    private val langFileName = "kor.traineddata"
+    private fun copyFiles(dir:String) {
+        try {
+            //val filepath = datapath + "tessdata/" + langFileName
+            val filepath = dir
+            Log.d("path","${filepath}")
+            val assetManager = assets
+            val instream: InputStream = assetManager.open(langFileName)
+            val outstream: OutputStream = FileOutputStream(filepath)
+            val buffer = ByteArray(1024)
+            var read: Int
+            while (instream.read(buffer).also { read = it } != -1) {
+                outstream.write(buffer, 0, read)
+            }
+            outstream.flush()
+            outstream.close()
+            instream.close()
+        } catch (e: FileNotFoundException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+
+    private fun checkFile(dir: File) {
+        //디렉토리가 없으면 디렉토리를 만들고 그후에 파일을 카피
+        val datafilepath = datapath + "tessdata/" + langFileName
+        if (!dir.exists() && dir.mkdirs()) {
+            copyFiles(datafilepath)
+        }
+        //디렉토리가 있지만 파일이 없으면 파일카피 진행
+        if (dir.exists()) {
+
+            val datafile = File(datafilepath)
+            if (!datafile.exists()) {
+                copyFiles(datafilepath)
+            }
+        }
     }
 
 
