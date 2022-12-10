@@ -79,6 +79,7 @@ class  MainFragment : Fragment(), OnMapReadyCallback, Overlay.OnClickListener {
     var longitude = 0.0
     var currentLocation = ""
     var readList : List<String> = listOf("")
+    lateinit var apiService: ApiService // for getting image
 
 
 

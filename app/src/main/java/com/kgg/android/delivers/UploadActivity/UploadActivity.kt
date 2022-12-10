@@ -11,22 +11,35 @@ import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.get
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import com.kgg.android.delivers.ApiService
 import com.kgg.android.delivers.MainActivity
 import com.kgg.android.delivers.data.Story
 import kotlinx.android.synthetic.main.activity_fast_create.*
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.task.vision.classifier.Classifications
 import org.tensorflow.lite.task.vision.classifier.ImageClassifier
-import org.tensorflow.lite.task.vision.detector.Detection
 import org.tensorflow.lite.task.vision.detector.ObjectDetector
+import retrofit2.Retrofit
 import java.text.SimpleDateFormat
 import java.util.*
+
+//import io.reactivex.functions.Action;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import java.io.*
 
 
 // 가경
@@ -36,6 +49,8 @@ class UploadActivity: AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private var imgUri : Uri? = null
     private var myimg: Bitmap? = null
+
+    lateinit var apiService: ApiService // for uploading image
 
     var latitude = 0.0
     var longitude = 0.0
@@ -49,6 +64,8 @@ class UploadActivity: AppCompatActivity() {
         setContentView(com.kgg.android.delivers.R.layout.activity_fast_create)
 
         auth = FirebaseAuth.getInstance()
+
+        initRetrofitClient()
 
         latitude = intent.getStringExtra("latitude")?.toDouble()!!
         longitude = intent.getStringExtra("longitude")?.toDouble()!!
@@ -83,6 +100,18 @@ class UploadActivity: AppCompatActivity() {
 
 
     }
+
+    // init retrofit
+    private fun initRetrofitClient() {
+        val client = OkHttpClient.Builder().build()
+        // baseUrl indicates our server
+        apiService =
+            Retrofit.Builder().baseUrl("http://117.17.189.202:8080").client(client).build().create<ApiService>(
+                ApiService::class.java
+            )
+    }
+
+
 
     // object detection 함수
     private fun runObjectDetection(bitmap: Bitmap) {
@@ -184,6 +213,7 @@ class UploadActivity: AppCompatActivity() {
 
                 fbFirestore.collection("story").document(documentReference.id).update("photo", "images/story/${imageName}")
                 fbFirestore.collection("story").document(documentReference.id).update("postId", documentReference.id)
+                
 
                 Log.d(TAG, "DocumentSnapshot written with ID: ${documentReference.id}")
                 val imgRef : StorageReference = fbFireStorage.getReference("images/story/${imageName}")
