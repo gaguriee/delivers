@@ -6,12 +6,13 @@
 - 인스타그램과 유사한 등록/조회 UI를 통해, 사용자로 하여금 보다 편리하고 빠른 이용이 가능하도록 만들었습니다.
 - 네이버 맵 API를 사용해서 현 위치 근처의 이웃들이 남긴 게시글 위주로 확인할 수 있습니다.
 - 1:1 채팅을 통해 유저 간 소통을 원할하게 만들었습니다.
+<br/> 
 
 ### 프로젝트 기간
-2022.11 한달간 진행하였습니다.
+2022.11 한달간 진행하였습니다. 
+<br/> 
 
 ### 프로젝트 구조도
-<br/> 
 주 사용 언어는 Kotlin이며, 서버를 따로 구현하지 않고 Firebase 환경에서 개발을 진행했습니다. (Firebase Cloud Storage, Firestore, Firebase Realtime Database)<br/> 
 
 <img width="1201" alt="image" src="https://user-images.githubusercontent.com/74501631/219410903-8f9b95e9-0098-4de4-b67d-1d8f3a4a3e21.png">
