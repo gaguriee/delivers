@@ -11,7 +11,7 @@
 2022.11 한달간 진행하였습니다.
 
 ### 프로젝트 구조도
-<br/> <br/> 
+<br/> 
 주 사용 언어는 Kotlin이며, 서버를 따로 구현하지 않고 Firebase 환경에서 개발을 진행했습니다. (Firebase Cloud Storage, Firestore, Firebase Realtime Database)<br/> 
 
 <img width="1201" alt="image" src="https://user-images.githubusercontent.com/74501631/219410903-8f9b95e9-0098-4de4-b67d-1d8f3a4a3e21.png">
